@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrackIt — Job & Internship Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #A3E635;
+      --accent-dark: #65a30d;
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --surface2: #1c1c1c;
+      --surface3: #242424;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.14);
+      --text: #f0f0f0;
+      --muted: #777;
+      --font: 'Syne', sans-serif;
+      --mono: 'DM Mono', monospace;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ---- Layout ---- */
+    .wrapper { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* ---- Header ---- */
+    header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 2rem;
+    }
+    .logo { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+    .logo span { color: var(--accent); }
+    .logo sub { font-size: 11px; font-weight: 400; color: var(--muted); font-family: var(--mono); margin-left: 6px; vertical-align: middle; }
+
+    .add-btn {
+      background: var(--accent); color: #0d0d0d;
+      border: none; padding: 10px 20px; border-radius: 8px;
+      font-family: var(--font); font-size: 14px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .add-btn:hover { opacity: 0.88; }
+    .add-btn:active { transform: scale(0.97); }
+
+    /* ---- Stats ---- */
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 1.75rem;
+    }
+    .stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+    .stat-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .stat-val { font-size: 28px; font-weight: 800; line-height: 1; }
+    .stat-val.c-blue { color: #60a5fa; }
+    .stat-val.c-amber { color: #fbbf24; }
+    .stat-val.c-green { color: var(--accent); }
+    .stat-val.c-red { color: #f87171; }
+
+    /* ---- Toolbar ---- */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 1.25rem; align-items: center; flex-wrap: wrap; }
+
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    #search {
+      width: 100%; background: var(--surface); border: 0.5px solid var(--border2);
+      border-radius: 8px; padding: 9px 12px 9px 36px; color: var(--text);
+      font-family: var(--font); font-size: 14px; outline: none;
+      transition: border-color 0.15s;
+    }
+    #search:focus { border-color: var(--accent); }
+    #search::placeholder { color: var(--muted); }
+
+    .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip {
+      padding: 7px 14px; border-radius: 20px; border: 0.5px solid var(--border2);
+      background: transparent; color: var(--muted); font-family: var(--font);
+      font-size: 13px; cursor: pointer; transition: all 0.15s;
+    }
+    .chip:hover { background: var(--surface2); color: var(--text); }
+    .chip.active { background: var(--surface2); color: var(--text); border-color: rgba(255,255,255,0.25); font-weight: 500; }
+
+    /* ---- Application list ---- */
+    .list { display: flex; flex-direction: column; gap: 8px; }
+
+    .card {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: var(--radius); padding: 16px 20px;
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: center; gap: 16px;
+      transition: border-color 0.15s;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .card:hover { border-color: var(--border2); }
+
+    .card-role { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .card-company { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .card-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .tag { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+    .tag-type { background: var(--surface3); color: var(--muted); }
+    .tag-date { color: var(--muted); }
+    .tag-location { color: #a78bfa; background: rgba(167,139,250,0.1); }
+    .tag-salary { color: var(--accent); background: rgba(163,230,53,0.08); }
+
+    .card-right { display: flex; align-items: center; gap: 10px; }
+
+    .badge {
+      padding: 5px 13px; border-radius: 20px;
+      font-size: 12px; font-weight: 500; font-family: var(--mono);
+      white-space: nowrap; cursor: pointer; transition: opacity 0.15s;
+      border: none;
+    }
+    .badge:hover { opacity: 0.8; }
+    .badge.APPLIED    { background: rgba(96,165,250,0.12); color: #60a5fa; }
+    .badge.INTERVIEW  { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .badge.OFFER      { background: rgba(163,230,53,0.12); color: #a3e635; }
+    .badge.REJECTED   { background: rgba(248,113,113,0.12); color: #f87171; }
+
+    .icon-btn {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; padding: 6px; border-radius: 6px; line-height: 1;
+      transition: color 0.15s, background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-btn:hover { color: var(--text); background: var(--surface2); }
+    .icon-btn.del:hover { color: #f87171; }
+
+    .empty {
+      text-align: center; padding: 4rem 1rem; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .empty svg { opacity: 0.3; }
+    .empty p { font-size: 14px; }
+
+    .loading {
+      text-align: center; padding: 3rem; color: var(--muted);
+      font-family: var(--mono); font-size: 13px;
+    }
+
+    .error-banner {
+      background: rgba(248,113,113,0.1); border: 0.5px solid rgba(248,113,113,0.3);
+      color: #f87171; border-radius: 8px; padding: 12px 16px;
+      font-size: 13px; margin-bottom: 1rem; display: none;
+    }
+
+    /* ---- Modal ---- */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      z-index: 100; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface); border: 0.5px solid var(--border2);
+      border-radius: 14px; padding: 28px 32px; width: 100%; max-width: 480px;
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+    .field input, .field select, .field textarea {
+      width: 100%; background: var(--surface2);
+      border: 0.5px solid var(--border2); border-radius: 8px;
+      padding: 10px 13px; color: var(--text);
+      font-family: var(--font); font-size: 14px; outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .field select option { background: var(--surface); }
+    .field textarea { resize: vertical; min-height: 80px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .modal-actions button { flex: 1; padding: 11px; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+    .btn-cancel { background: var(--surface3); color: var(--muted); }
+    .btn-cancel:hover { color: var(--text); }
+    .btn-save { background: var(--accent); color: #0d0d0d; }
+    .btn-save:hover { opacity: 0.88; }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 200;
+      background: var(--surface2); border: 0.5px solid var(--border2);
+      border-radius: 10px; padding: 12px 18px; font-size: 14px;
+      display: flex; align-items: center; gap: 10px;
+      animation: toastIn 0.2s ease; max-width: 320px;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .toast.success { border-left: 3px solid var(--accent); }
+    .toast.error { border-left: 3px solid #f87171; }
+
+    /* ---- Status cycling modal ---- */
+    .status-pick {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 150;
+      align-items: center; justify-content: center;
+    }
+    .status-pick.open { display: flex; }
+    .status-box {
+      background: var(--surface); border: 0.5px solid var(--border2);
+      border-radius: 12px; padding: 20px 24px; min-width: 240px;
+    }
+    .status-box h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; font-family: var(--mono); }
+    .status-option {
+      display: block; width: 100%; padding: 10px 14px; border-radius: 8px;
+      background: var(--surface2); border: 0.5px solid var(--border);
+      color: var(--text); font-family: var(--font); font-size: 14px;
+      cursor: pointer; margin-bottom: 7px; text-align: left;
+      transition: border-color 0.15s;
+    }
+    .status-option:last-child { margin-bottom: 0; }
+    .status-option:hover { border-color: var(--border2); }
+
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .row-2 { grid-template-columns: 1fr; }
+      .modal { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <header>
+    <div class="logo">Track<span>It</span><sub>by you</sub></div>
+    <button class="add-btn" onclick="openModal()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Application
+    </button>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Applied</div>
+      <div class="stat-val c-blue" id="cnt-applied">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Interview</div>
+      <div class="stat-val c-amber" id="cnt-interview">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Offer</div>
+      <div class="stat-val c-green" id="cnt-offer">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Rejected</div>
+      <div class="stat-val c-red" id="cnt-rejected">—</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" type="text" placeholder="Search by role or company..." oninput="onSearch()" />
+    </div>
+    <div class="filter-group">
+      <button class="chip active" data-f="all" onclick="setFilter('all',this)">All</button>
+      <button class="chip" data-f="APPLIED" onclick="setFilter('APPLIED',this)">Applied</button>
+      <button class="chip" data-f="INTERVIEW" onclick="setFilter('INTERVIEW',this)">Interview</button>
+      <button class="chip" data-f="OFFER" onclick="setFilter('OFFER',this)">Offer</button>
+      <button class="chip" data-f="REJECTED" onclick="setFilter('REJECTED',this)">Rejected</button>
+      <button class="chip" data-f="type:INTERNSHIP" onclick="setFilter('type:INTERNSHIP',this)">Internships</button>
+      <button class="chip" data-f="type:JOB" onclick="setFilter('type:JOB',this)">Jobs</button>
+    </div>
+  </div>
+
+  <!-- Error banner -->
+  <div class="error-banner" id="error-banner"></div>
+
+  <!-- List -->
+  <div class="list" id="list">
+    <div class="loading">loading applications...</div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Application</h2>
+      <button class="icon-btn" onclick="closeModal()" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Role / Position *</label>
+      <input id="f-role" type="text" placeholder="e.g. Backend Developer Intern" />
+    </div>
+    <div class="field">
+      <label>Company *</label>
+      <input id="f-company" type="text" placeholder="e.g. Razorpay" />
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Type *</label>
+        <select id="f-type">
+          <option value="INTERNSHIP">Internship</option>
+          <option value="JOB">Full-time Job</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status *</label>
+        <select id="f-status">
+          <option value="APPLIED">Applied</option>
+          <option value="INTERVIEW">Interview</option>
+          <option value="OFFER">Offer</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label>Date Applied *</label>
+        <input id="f-date" type="date" />
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input id="f-location" type="text" placeholder="e.g. Remote, Bangalore" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Salary / Stipend</label>
+      <input id="f-salary" type="text" placeholder="e.g. 25000/month or 8-12 LPA" />
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="f-notes" placeholder="Any notes about this application..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="btn-save" onclick="saveApp()">Save Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Picker -->
+<div class="status-pick" id="status-pick" onclick="closeStatusPick(event)">
+  <div class="status-box">
+    <h3>Change status</h3>
+    <button class="status-option" onclick="pickStatus('APPLIED')">🔵 Applied</button>
+    <button class="status-option" onclick="pickStatus('INTERVIEW')">🟡 Interview</button>
+    <button class="status-option" onclick="pickStatus('OFFER')">🟢 Offer</button>
+    <button class="status-option" onclick="pickStatus('REJECTED')">🔴 Rejected</button>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:8080/api/applications';
+
+  let activeFilter = 'all';
+  let searchTimer = null;
+  let editingId = null;
+  let statusTargetId = null;
+
+  // ---- FETCH helpers ----
+
+  async function apiFetch(url, options = {}) {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Request failed' }));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  // ---- Load stats ----
+
+  async function loadStats() {
+    try {
+      const stats = await apiFetch(`${API}/stats`);
+      document.getElementById('cnt-applied').textContent = stats.applied;
+      document.getElementById('cnt-interview').textContent = stats.interview;
+      document.getElementById('cnt-offer').textContent = stats.offer;
+      document.getElementById('cnt-rejected').textContent = stats.rejected;
+    } catch (e) {
+      // Stats failure is non-critical
+    }
+  }
+
+  // ---- Load list ----
+
+  async function loadList() {
+    const list = document.getElementById('list');
+    list.innerHTML = '<div class="loading">loading...</div>';
+
+    const search = document.getElementById('search').value.trim();
+    let url = API + '?';
+
+    if (search) {
+      url += `search=${encodeURIComponent(search)}`;
+    } else if (activeFilter.startsWith('type:')) {
+      url += `type=${activeFilter.split(':')[1]}`;
+    } else if (activeFilter !== 'all') {
+      url += `status=${activeFilter}`;
+    }
+
+    try {
+      const apps = await apiFetch(url);
+      hideError();
+      renderList(apps);
+    } catch (e) {
+      showError('Could not connect to backend. Make sure Spring Boot is running on port 8080.');
+      list.innerHTML = '';
+    }
+  }
+
+  function renderList(apps) {
+    const list = document.getElementById('list');
+    if (apps.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+          <p>No applications found.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = apps.map(a => `
+      <div class="card" id="card-${a.id}">
+        <div>
+          <div class="card-role">${esc(a.role)}</div>
+          <div class="card-company">${esc(a.company)}</div>
+          <div class="card-meta">
+            <span class="tag tag-type">${a.type.toLowerCase()}</span>
+            <span class="tag tag-date">${a.dateApplied}</span>
+            ${a.location ? `<span class="tag tag-location">${esc(a.location)}</span>` : ''}
+            ${a.salaryRange ? `<span class="tag tag-salary">${esc(a.salaryRange)}</span>` : ''}
+          </div>
+        </div>
+        <div class="card-right">
+          <button class="badge ${a.status}" onclick="openStatusPick(${a.id})">${a.status}</button>
+          <button class="icon-btn" onclick="openEdit(${a.id})" aria-label="Edit">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="icon-btn del" onclick="deleteApp(${a.id})" aria-label="Delete">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---- Filters ----
+
+  function setFilter(f, el) {
+    activeFilter = f;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    loadList();
+  }
+
+  function onSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(loadList, 350);
+  }
+
+  // ---- Modal ----
+
+  function openModal() {
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'Add Application';
+    document.getElementById('btn-save').textContent = 'Save Application';
+    clearForm();
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => document.getElementById('f-role').focus(), 100);
+  }
+
+  async function openEdit(id) {
+    try {
+      const app = await apiFetch(`${API}/${id}`);
+      editingId = id;
+      document.getElementById('modal-title').textContent = 'Edit Application';
+      document.getElementById('btn-save').textContent = 'Update Application';
+      document.getElementById('f-role').value = app.role;
+      document.getElementById('f-company').value = app.company;
+      document.getElementById('f-type').value = app.type;
+      document.getElementById('f-status').value = app.status;
+      document.getElementById('f-date').value = app.dateApplied;
+      document.getElementById('f-location').value = app.location || '';
+      document.getElementById('f-salary').value = app.salaryRange || '';
+      document.getElementById('f-notes').value = app.notes || '';
+      document.getElementById('overlay').classList.add('open');
+    } catch (e) {
+      showToast('Failed to load application', 'error');
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function overlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function clearForm() {
+    ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-type').value = 'INTERNSHIP';
+    document.getElementById('f-status').value = 'APPLIED';
+  }
+
+  // ---- Save ----
+
+  async function saveApp() {
+    const role = document.getElementById('f-role').value.trim();
+    const company = document.getElementById('f-company').value.trim();
+    const date = document.getElementById('f-date').value;
+
+    if (!role || !company || !date) {
+      showToast('Role, company and date are required.', 'error');
+      return;
+    }
+
+    const payload = {
+      role,
+      company,
+      type: document.getElementById('f-type').value,
+      status: document.getElementById('f-status').value,
+      dateApplied: date,
+      location: document.getElementById('f-location').value.trim() || null,
+      salaryRange: document.getElementById('f-salary').value.trim() || null,
+      notes: document.getElementById('f-notes').value.trim() || null
+    };
+
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      if (editingId) {
+        await apiFetch(`${API}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Application updated!', 'success');
+      } else {
+        await apiFetch(API, { method: 'POST', body: JSON.stringify(payload) });
+        showToast('Application added!', 'success');
+      }
+      closeModal();
+      loadList();
+      loadStats();
+    } catch (e) {
+      showToast(e.message || 'Save failed', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = editingId ? 'Update Application' : 'Save Application';
+    }
+  }
+
+  // ---- Delete ----
+
+  async function deleteApp(id) {
+    if (!confirm('Delete this application?')) return;
+    try {
+      await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+      showToast('Deleted.', 'success');
+      loadList();
+      loadStats();
+    } catch (e) {
+      showToast('Delete failed', 'error');
+    }
+  }
+
+  // ---- Status picker ----
+
+  function openStatusPick(id) {
+    statusTargetId = id;
+    document.getElementById('status-pick').classList.add('open');
+  }
+
+  function closeStatusPick(e) {
+    if (e.target === document.getElementById('status-pick')) {
+      document.getElementById('status-pick').classList.remove('open');
+    }
+  }
+
+  async function pickStatus(status) {
+    document.getElementById('status-pick').classList.remove('open');
+    try {
+      await apiFetch(`${API}/${statusTargetId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+      showToast('Status updated!', 'success');
+      loadList();
+      loadStats();
+    } catch (e) {
+      showToast('Status update failed', 'error');
+    }
+  }
+
+  // ---- Utilities ----
+
+  function esc(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg, type = 'success') {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  function showError(msg) {
+    const b = document.getElementById('error-banner');
+    b.textContent = '⚠ ' + msg;
+    b.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('error-banner').style.display = 'none';
+  }
+
+  // ---- Init ----
+  loadStats();
+  loadList();
+</script>
+</body>
+</html>
