@@ -3,1114 +3,558 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TrackIt — Job & Internship Tracker</title>
+  <title>TrackIt — Application Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --accent: #ec4899;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-light: #334155;
-      --border: rgba(148,163,184,0.2);
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --font: 'Inter', sans-serif;
-      --mono: 'Fira Code', monospace;
-      --radius: 12px;
-      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
     body {
-      background: linear-gradient(135deg, var(--bg) 0%, #1a1f3a 100%);
-      color: var(--text);
-      font-family: var(--font);
-      min-height: 100vh;
-      line-height: 1.6;
+      font-family: 'Inter', sans-serif;
+      background-color: #ffffff;
+      color: #000000;
+    }
+    
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
     }
 
-    /* ---- Layout ---- */
-    .wrapper { 
-      max-width: 1200px; 
-      margin: 0 auto; 
-      padding: 2.5rem 1.5rem;
-    }
-
-    /* ---- Header ---- */
-    header {
-      display: flex; 
-      align-items: center;
-      justify-content: space-between; 
-      margin-bottom: 3rem;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo { 
-      font-size: 28px; 
-      font-weight: 800; 
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: white;
-      font-size: 16px;
-    }
-
-    .logo span { color: var(--primary); }
-
-    .add-btn {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      border: none; 
-      padding: 11px 24px; 
-      border-radius: 8px;
-      font-family: var(--font); 
-      font-size: 14px; 
-      font-weight: 600;
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      gap: 8px;
-      transition: all var(--transition);
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .add-btn:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-
-    .add-btn:active { transform: translateY(0); }
-
-    /* ---- Stats ---- */
-    .stats {
-      display: grid; 
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px; 
-      margin-bottom: 2.5rem;
-    }
-
-    .stat { 
-      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(236,72,153,0.05));
-      border: 1px solid var(--border);
-      border-radius: var(--radius); 
-      padding: 24px;
-      transition: all var(--transition);
+    /* Sliding Cursor Navigation Styles */
+    .nav-container {
       position: relative;
-      overflow: hidden;
+      display: flex;
+      width: fit-content;
+      border-radius: 9999px;
+      border: 2px solid #000000;
+      background-color: #ffffff;
+      padding: 4px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    .stat::before {
-      content: '';
+    .nav-tab {
+      position: relative;
+      z-index: 10;
+      display: block;
+      cursor: pointer;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #ffffff;
+      mix-blend-mode: difference;
+      transition: color 0.2s;
+    }
+
+    @media (min-width: 768px) {
+      .nav-tab {
+        padding: 12px 20px;
+        font-size: 1rem;
+      }
+    }
+
+    #nav-cursor {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
+      z-index: 0;
+      height: 28px;
+      border-radius: 9999px;
+      background-color: #000000;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       opacity: 0;
-      transition: opacity var(--transition);
-    }
-
-    .stat:hover {
-      border-color: var(--primary);
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
-    }
-
-    .stat:hover::before { opacity: 1; }
-
-    .stat-label { 
-      font-family: var(--mono); 
-      font-size: 12px; 
-      color: var(--text-muted); 
-      text-transform: uppercase; 
-      letter-spacing: 1px; 
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-
-    .stat-val { 
-      font-size: 32px; 
-      font-weight: 700; 
-      line-height: 1;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ---- Toolbar ---- */
-    .toolbar { 
-      display: flex; 
-      gap: 16px; 
-      margin-bottom: 2rem; 
-      align-items: center; 
-      flex-wrap: wrap;
-    }
-
-    .search-wrap { 
-      position: relative; 
-      flex: 1; 
-      min-width: 250px;
-    }
-
-    .search-wrap svg { 
-      position: absolute; 
-      left: 14px; 
-      top: 50%; 
-      transform: translateY(-50%); 
-      color: var(--text-muted); 
       pointer-events: none;
-      width: 18px;
-      height: 18px;
     }
 
-    #search {
-      width: 100%; 
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px; 
-      padding: 11px 14px 11px 44px; 
-      color: var(--text);
-      font-family: var(--font); 
-      font-size: 14px; 
-      outline: none;
-      transition: all var(--transition);
+    @media (min-width: 768px) {
+      #nav-cursor {
+        height: 48px;
+      }
     }
 
-    #search:focus { 
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-      background: var(--surface-light);
+    /* Structured Form Styles */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    #search::placeholder { color: var(--text-muted); }
-
-    .filter-group { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      padding: 8px 16px; 
-      border-radius: 20px; 
-      border: 1px solid var(--border);
-      background: transparent; 
-      color: var(--text-muted); 
-      font-family: var(--font);
-      font-size: 13px; 
-      cursor: pointer; 
-      transition: all var(--transition);
-      font-weight: 500;
-    }
-
-    .chip:hover { 
-      background: var(--surface-light); 
-      color: var(--text);
-      border-color: var(--primary);
-    }
-
-    .chip.active { 
-      background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(236,72,153,0.1));
-      color: var(--primary);
-      border-color: var(--primary);
+    .field-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666666;
       font-weight: 600;
     }
 
-    /* ---- Application list ---- */
-    .list { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px;
+    .field-input {
+      width: 100%;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 14px;
+      background: #fafafa;
+      transition: all 0.2s;
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); 
-      padding: 20px;
-      display: grid; 
-      grid-template-columns: 1fr auto;
-      align-items: center; 
-      gap: 20px;
-      transition: all var(--transition);
-      animation: slideIn 0.3s ease;
-      position: relative;
-      overflow: hidden;
+    .field-input:focus {
+      border-color: #000000;
+      background: #ffffff;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
     }
 
-    @keyframes slideIn { 
-      from { opacity: 0; transform: translateX(-12px); } 
-      to { opacity: 1; transform: translateX(0); } 
+    /* Card Styles */
+    .app-card {
+      border: 1px solid #f0f0f0;
+      border-radius: 12px;
+      transition: all 0.2s;
+      background: #ffffff;
     }
 
-    .card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--primary), var(--accent));
-      opacity: 0;
-      transition: opacity var(--transition);
-    }
-
-    .card:hover { 
-      border-color: var(--primary);
-      transform: translateX(4px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
-    }
-
-    .card:hover::before { opacity: 1; }
-
-    .card-role { 
-      font-size: 16px; 
-      font-weight: 700; 
-      margin-bottom: 6px;
-      color: var(--text);
-    }
-
-    .card-company { 
-      font-size: 14px; 
-      color: var(--text-muted); 
-      margin-bottom: 12px;
-    }
-
-    .card-meta { 
-      display: flex; 
-      gap: 10px; 
-      align-items: center; 
-      flex-wrap: wrap;
-    }
-
-    .tag { 
-      font-family: var(--mono); 
-      font-size: 11px; 
-      padding: 4px 10px; 
-      border-radius: 6px;
-      font-weight: 500;
-      background: var(--surface-light);
-      color: var(--text-muted);
-    }
-
-    .tag-type { 
-      background: rgba(99, 102, 241, 0.15);
-      color: var(--primary);
-    }
-
-    .tag-date { 
-      background: rgba(148, 163, 184, 0.1);
-      color: var(--text-muted);
-    }
-
-    .tag-location { 
-      background: rgba(236, 72, 153, 0.15);
-      color: var(--accent);
-    }
-
-    .tag-salary { 
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--success);
-    }
-
-    .card-right { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px;
+    .app-card:hover {
+      border-color: #000000;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
     }
 
     .badge {
-      padding: 6px 14px; 
-      border-radius: 20px;
-      font-size: 12px; 
-      font-weight: 600; 
-      font-family: var(--mono);
-      white-space: nowrap; 
-      cursor: pointer; 
-      transition: all var(--transition);
-      border: none;
-    }
-
-    .badge:hover { transform: scale(1.05); }
-
-    .badge.APPLIED    { 
-      background: rgba(99, 102, 241, 0.2); 
-      color: var(--primary);
-    }
-
-    .badge.INTERVIEW  { 
-      background: rgba(245, 158, 11, 0.2); 
-      color: var(--warning);
-    }
-
-    .badge.OFFER      { 
-      background: rgba(16, 185, 129, 0.2); 
-      color: var(--success);
-    }
-
-    .badge.REJECTED   { 
-      background: rgba(239, 68, 68, 0.2); 
-      color: var(--danger);
-    }
-
-    .icon-btn {
-      background: transparent; 
-      border: none; 
-      color: var(--text-muted);
-      cursor: pointer; 
-      padding: 8px; 
-      border-radius: 6px; 
-      line-height: 1;
-      transition: all var(--transition);
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-    }
-
-    .icon-btn:hover { 
-      color: var(--text); 
-      background: var(--surface-light);
-    }
-
-    .icon-btn.del:hover { 
-      color: var(--danger);
-      background: rgba(239, 68, 68, 0.1);
-    }
-
-    .empty {
-      text-align: center; 
-      padding: 5rem 1rem; 
-      color: var(--text-muted);
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      gap: 16px;
-    }
-
-    .empty svg { 
-      opacity: 0.4;
-      width: 56px;
-      height: 56px;
-    }
-
-    .empty p { 
-      font-size: 15px;
-    }
-
-    .loading {
-      text-align: center; 
-      padding: 4rem; 
-      color: var(--text-muted);
-      font-family: var(--mono); 
-      font-size: 13px;
-    }
-
-    .error-banner {
-      background: rgba(239, 68, 68, 0.1); 
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5; 
-      border-radius: 8px; 
-      padding: 14px 16px;
-      font-size: 13px; 
-      margin-bottom: 1.5rem; 
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-
-    /* ---- Modal ---- */
-    .overlay {
-      display: none; 
-      position: fixed; 
-      inset: 0;
-      background: rgba(0,0,0,0.6); 
-      backdrop-filter: blur(4px);
-      z-index: 100; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 1rem;
-    }
-
-    .overlay.open { display: flex; }
-
-    .modal {
-      background: var(--surface); 
-      border: 1px solid var(--border);
-      border-radius: 16px; 
-      padding: 32px; 
-      width: 100%; 
-      max-width: 520px;
-      animation: modalSlideUp 0.3s ease;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-
-    @keyframes modalSlideUp { 
-      from { opacity: 0; transform: translateY(20px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-
-    .modal-header { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      margin-bottom: 24px;
-    }
-
-    .modal-header h2 { 
-      font-size: 20px; 
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
       font-weight: 700;
-    }
-
-    .field { margin-bottom: 18px; }
-
-    .field label { 
-      display: block; 
-      font-family: var(--mono); 
-      font-size: 12px; 
-      color: var(--text-muted); 
-      text-transform: uppercase; 
-      letter-spacing: 0.5px; 
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .field input, .field select, .field textarea {
-      width: 100%; 
-      background: var(--surface-light);
-      border: 1px solid var(--border); 
-      border-radius: 8px;
-      padding: 11px 14px; 
-      color: var(--text);
-      font-family: var(--font); 
-      font-size: 14px; 
-      outline: none;
-      transition: all var(--transition);
-    }
-
-    .field input:focus, .field select:focus, .field textarea:focus { 
-      border-color: var(--primary);
-      background: var(--surface);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    }
-
-    .field select option { background: var(--surface); }
-
-    .field textarea { 
-      resize: vertical; 
-      min-height: 100px;
-    }
-
-    .row-2 { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 14px;
-    }
-
-    .modal-actions { 
-      display: flex; 
-      gap: 12px; 
-      margin-top: 28px;
-    }
-
-    .modal-actions button { 
-      flex: 1; 
-      padding: 12px; 
-      border-radius: 8px; 
-      font-family: var(--font); 
-      font-size: 14px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      border: none; 
-      transition: all var(--transition);
-    }
-
-    .btn-cancel { 
-      background: var(--surface-light); 
-      color: var(--text-muted);
-    }
-
-    .btn-cancel:hover { 
-      color: var(--text);
-      background: rgba(99, 102, 241, 0.1);
-    }
-
-    .btn-save { 
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn-save:hover { 
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-
-    .btn-save:disabled { 
-      opacity: 0.5; 
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* ---- Toast ---- */
-    .toast {
-      position: fixed; 
-      bottom: 24px; 
-      right: 24px; 
-      z-index: 200;
-      background: var(--surface); 
-      border: 1px solid var(--border);
-      border-radius: 10px; 
-      padding: 14px 18px; 
-      font-size: 14px;
-      display: flex; 
-      align-items: center; 
-      gap: 12px;
-      animation: toastSlideIn 0.3s ease; 
-      max-width: 360px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-
-    @keyframes toastSlideIn { 
-      from { opacity: 0; transform: translateY(12px); } 
-      to { opacity: 1; transform: translateY(0); } 
-    }
-
-    .toast.success { 
-      border-left: 3px solid var(--success);
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--success);
-    }
-
-    .toast.error { 
-      border-left: 3px solid var(--danger);
-      background: rgba(239, 68, 68, 0.1);
-      color: var(--danger);
-    }
-
-    /* ---- Status picker ---- */
-    .status-pick {
-      display: none; 
-      position: fixed; 
-      inset: 0;
-      background: rgba(0,0,0,0.6); 
-      z-index: 150;
-      align-items: center; 
-      justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .status-pick.open { display: flex; }
-
-    .status-box {
-      background: var(--surface); 
-      border: 1px solid var(--border);
-      border-radius: 14px; 
-      padding: 24px; 
-      min-width: 260px;
-      animation: modalSlideUp 0.3s ease;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    }
-
-    .status-box h3 { 
-      font-size: 14px; 
-      color: var(--text-muted); 
-      margin-bottom: 16px; 
-      font-family: var(--mono);
-      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      border: 1px solid transparent;
     }
 
-    .status-option {
-      display: block; 
-      width: 100%; 
-      padding: 11px 14px; 
-      border-radius: 8px;
-      background: var(--surface-light); 
-      border: 1px solid var(--border);
-      color: var(--text); 
-      font-family: var(--font); 
-      font-size: 14px;
-      cursor: pointer; 
-      margin-bottom: 8px; 
-      text-align: left;
-      transition: all var(--transition);
-      font-weight: 500;
+    .badge-applied { background: #f0f0f0; color: #000000; }
+    .badge-interview { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    .badge-offer { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .badge-rejected { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+    .btn-black {
+      background: #000000;
+      color: #ffffff;
+      padding: 10px 24px;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.2s;
     }
 
-    .status-option:last-child { margin-bottom: 0; }
-
-    .status-option:hover { 
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.1);
-      color: var(--primary);
-    }
-
-    @media (max-width: 768px) {
-      .wrapper { padding: 1.5rem 1rem; }
-
-      header { flex-direction: column; gap: 1rem; align-items: flex-start; }
-
-      .stats { grid-template-columns: repeat(2, 1fr); }
-
-      .toolbar { flex-direction: column; }
-
-      .search-wrap { min-width: 100%; }
-
-      .row-2 { grid-template-columns: 1fr; }
-
-      .modal { padding: 24px; }
-
-      .card { grid-template-columns: 1fr; }
-
-      .card-right { width: 100%; justify-content: space-between; }
-
-      .logo { font-size: 24px; }
-
-      .add-btn { width: 100%; justify-content: center; }
+    .btn-black:hover {
+      opacity: 0.8;
+      transform: scale(1.02);
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen bg-slate-50/30">
+  <div class="max-w-5xl mx-auto px-6 py-12 md:py-20">
+    <!-- Header -->
+    <header class="flex flex-col items-center mb-16 text-center">
+      <div class="mb-8">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter mb-2">TRACKIT</h1>
+        <p class="text-slate-400 font-medium uppercase tracking-widest text-xs">Professional Intelligence System</p>
+      </div>
+      
+      <!-- New Sliding Navigation for Filters -->
+      <div class="nav-container" id="filter-nav">
+        <div id="nav-cursor"></div>
+        <div class="nav-tab active" data-f="all" onclick="setFilter('all', this)">All</div>
+        <div class="nav-tab" data-f="APPLIED" onclick="setFilter('APPLIED', this)">Applied</div>
+        <div class="nav-tab" data-f="INTERVIEW" onclick="setFilter('INTERVIEW', this)">Interview</div>
+        <div class="nav-tab" data-f="OFFER" onclick="setFilter('OFFER', this)">Offer</div>
+        <div class="nav-tab" data-f="REJECTED" onclick="setFilter('REJECTED', this)">Rejected</div>
+      </div>
+    </header>
 
-<div class="wrapper">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">T</div>
-      <div>
-        <span>Track</span>It
+    <!-- Metrics -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+      <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+        <div class="field-label mb-2">Total Applied</div>
+        <div id="cnt-applied" class="text-3xl font-bold">0</div>
+      </div>
+      <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+        <div class="field-label mb-2">Interviews</div>
+        <div id="cnt-interview" class="text-3xl font-bold">0</div>
+      </div>
+      <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+        <div class="field-label mb-2">Offers</div>
+        <div id="cnt-offer" class="text-3xl font-bold text-emerald-600">0</div>
+      </div>
+      <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+        <div class="field-label mb-2">Rejections</div>
+        <div id="cnt-rejected" class="text-3xl font-bold text-rose-600">0</div>
       </div>
     </div>
-    <button class="add-btn" onclick="openModal()">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Application
-    </button>
-  </header>
 
-  <!-- Stats -->
-  <div class="stats">
-    <div class="stat">
-      <div class="stat-label">📤 Applied</div>
-      <div class="stat-val" id="cnt-applied">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">💬 Interview</div>
-      <div class="stat-val" id="cnt-interview">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">🎉 Offer</div>
-      <div class="stat-val" id="cnt-offer">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">❌ Rejected</div>
-      <div class="stat-val" id="cnt-rejected">—</div>
-    </div>
-  </div>
-
-  <!-- Toolbar -->
-  <div class="toolbar">
-    <div class="search-wrap">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="search" type="text" placeholder="Search by role or company..." oninput="onSearch()" />
-    </div>
-    <div class="filter-group">
-      <button class="chip active" data-f="all" onclick="setFilter('all',this)">All</button>
-      <button class="chip" data-f="APPLIED" onclick="setFilter('APPLIED',this)">Applied</button>
-      <button class="chip" data-f="INTERVIEW" onclick="setFilter('INTERVIEW',this)">Interview</button>
-      <button class="chip" data-f="OFFER" onclick="setFilter('OFFER',this)">Offer</button>
-      <button class="chip" data-f="REJECTED" onclick="setFilter('REJECTED',this)">Rejected</button>
-      <button class="chip" data-f="type:INTERNSHIP" onclick="setFilter('type:INTERNSHIP',this)">Internships</button>
-      <button class="chip" data-f="type:JOB" onclick="setFilter('type:JOB',this)">Jobs</button>
-    </div>
-  </div>
-
-  <!-- Error banner -->
-  <div class="error-banner" id="error-banner"></div>
-
-  <!-- List -->
-  <div class="list" id="list">
-    <div class="loading">loading applications...</div>
-  </div>
-</div>
-
-<!-- Add/Edit Modal -->
-<div class="overlay" id="overlay" onclick="overlayClick(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modal-title">Add Application</h2>
-      <button class="icon-btn" onclick="closeModal()" aria-label="Close">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <!-- Actions -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+      <div class="relative w-full md:max-w-md">
+        <input id="search" type="text" placeholder="Search by role, company..." oninput="onSearch()" 
+               class="w-full bg-white border border-slate-200 rounded-full px-6 py-3 text-sm outline-none focus:border-black transition-all shadow-sm">
+      </div>
+      <button onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Application
       </button>
     </div>
 
-    <div class="field">
-      <label>Role / Position *</label>
-      <input id="f-role" type="text" placeholder="e.g. Backend Developer Intern" />
-    </div>
-    <div class="field">
-      <label>Company *</label>
-      <input id="f-company" type="text" placeholder="e.g. Razorpay" />
-    </div>
-    <div class="row-2">
-      <div class="field">
-        <label>Type *</label>
-        <select id="f-type">
-          <option value="INTERNSHIP">Internship</option>
-          <option value="JOB">Full-time Job</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Status *</label>
-        <select id="f-status">
-          <option value="APPLIED">Applied</option>
-          <option value="INTERVIEW">Interview</option>
-          <option value="OFFER">Offer</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
-      </div>
-    </div>
-    <div class="row-2">
-      <div class="field">
-        <label>Date Applied *</label>
-        <input id="f-date" type="date" />
-      </div>
-      <div class="field">
-        <label>Location</label>
-        <input id="f-location" type="text" placeholder="e.g. Remote, Bangalore" />
-      </div>
-    </div>
-    <div class="field">
-      <label>Salary / Stipend</label>
-      <input id="f-salary" type="text" placeholder="e.g. 25000/month or 8-12 LPA" />
-    </div>
-    <div class="field">
-      <label>Notes</label>
-      <textarea id="f-notes" placeholder="Any notes about this application..."></textarea>
-    </div>
+    <!-- Error Banner -->
+    <div id="error-banner" class="hidden mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl text-xs mono uppercase tracking-wider"></div>
 
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" id="btn-save" onclick="saveApp()">Save Application</button>
+    <!-- List -->
+    <div id="list" class="space-y-3">
+      <div class="text-center py-20 text-slate-300 mono text-xs uppercase tracking-widest">System Ready...</div>
     </div>
   </div>
-</div>
 
-<!-- Status Picker -->
-<div class="status-pick" id="status-pick" onclick="closeStatusPick(event)">
-  <div class="status-box">
-    <h3>Change status</h3>
-    <button class="status-option" onclick="pickStatus('APPLIED')">🔵 Applied</button>
-    <button class="status-option" onclick="pickStatus('INTERVIEW')">🟡 Interview</button>
-    <button class="status-option" onclick="pickStatus('OFFER')">🟢 Offer</button>
-    <button class="status-option" onclick="pickStatus('REJECTED')">🔴 Rejected</button>
-  </div>
-</div>
+  <!-- Modal -->
+  <div id="overlay" onclick="overlayClick(event)" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm items-center justify-center p-6">
+    <div class="bg-white w-full max-w-2xl rounded-3xl p-8 md:p-12 shadow-2xl animate-in zoom-in duration-200">
+      <div class="flex justify-between items-center mb-10">
+        <h2 id="modal-title" class="text-2xl font-black tracking-tighter">ADD RECORD</h2>
+        <button onclick="closeModal()" class="text-slate-300 hover:text-black transition-colors">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
 
-<script>
-  const API = window.location.origin + '/api/applications';
-
-  let activeFilter = 'all';
-  let searchTimer = null;
-  let editingId = null;
-  let statusTargetId = null;
-
-  // ---- FETCH helpers ----
-
-  async function apiFetch(url, options = {}) {
-    const res = await fetch(url, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Request failed' }));
-      throw new Error(err.message || `HTTP ${res.status}`);
-    }
-    if (res.status === 204) return null;
-    return res.json();
-  }
-
-  // ---- Load stats ----
-
-  async function loadStats() {
-    try {
-      const stats = await apiFetch(`${API}/stats`);
-      document.getElementById('cnt-applied').textContent = stats.applied;
-      document.getElementById('cnt-interview').textContent = stats.interview;
-      document.getElementById('cnt-offer').textContent = stats.offer;
-      document.getElementById('cnt-rejected').textContent = stats.rejected;
-    } catch (e) {
-      // Stats failure is non-critical
-    }
-  }
-
-  // ---- Load list ----
-
-  async function loadList() {
-    const list = document.getElementById('list');
-    list.innerHTML = '<div class="loading">loading...</div>';
-
-    const search = document.getElementById('search').value.trim();
-    let url = API + '?';
-
-    if (search) {
-      url += `search=${encodeURIComponent(search)}`;
-    } else if (activeFilter.startsWith('type:')) {
-      url += `type=${activeFilter.split(':')[1]}`;
-    } else if (activeFilter !== 'all') {
-      url += `status=${activeFilter}`;
-    }
-
-    try {
-      const apps = await apiFetch(url);
-      hideError();
-      renderList(apps);
-    } catch (e) {
-      showError('Could not connect to backend. Make sure Spring Boot is running on port 8080.');
-      list.innerHTML = '';
-    }
-  }
-
-  function renderList(apps) {
-    const list = document.getElementById('list');
-    if (apps.length === 0) {
-      list.innerHTML = `
-        <div class="empty">
-          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-          </svg>
-          <p>No applications found. Start tracking your journey! 🚀</p>
-        </div>`;
-      return;
-    }
-
-    list.innerHTML = apps.map(a => `
-      <div class="card" id="card-${a.id}">
-        <div>
-          <div class="card-role">${esc(a.role)}</div>
-          <div class="card-company">${esc(a.company)}</div>
-          <div class="card-meta">
-            <span class="tag tag-type">${a.type.toLowerCase()}</span>
-            <span class="tag tag-date">${a.dateApplied}</span>
-            ${a.location ? `<span class="tag tag-location">${esc(a.location)}</span>` : ''}
-            ${a.salaryRange ? `<span class="tag tag-salary">${esc(a.salaryRange)}</span>` : ''}
+      <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="field-group">
+            <label class="field-label">Position Name</label>
+            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Company / Organization</label>
+            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input">
           </div>
         </div>
-        <div class="card-right">
-          <button class="badge ${a.status}" onclick="openStatusPick(${a.id})">${a.status}</button>
-          <button class="icon-btn" onclick="openEdit(${a.id})" aria-label="Edit">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="icon-btn del" onclick="deleteApp(${a.id})" aria-label="Delete">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-          </button>
+
+        <div class="grid grid-cols-2 gap-6">
+          <div class="field-group">
+            <label class="field-label">Employment Type</label>
+            <select id="f-type" class="field-input appearance-none">
+              <option value="INTERNSHIP">Internship</option>
+              <option value="JOB">Full-time Job</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Current Phase</label>
+            <select id="f-status" class="field-input appearance-none">
+              <option value="APPLIED">Applied</option>
+              <option value="INTERVIEW">Interview</option>
+              <option value="OFFER">Offer</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
         </div>
-      </div>`).join('');
-  }
 
-  // ---- Filters ----
+        <div class="grid grid-cols-2 gap-6">
+          <div class="field-group">
+            <label class="field-label">Application Date</label>
+            <input id="f-date" type="date" class="field-input">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Location</label>
+            <input id="f-location" type="text" placeholder="e.g. Remote / New York" class="field-input">
+          </div>
+        </div>
 
-  function setFilter(f, el) {
-    activeFilter = f;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    loadList();
-  }
+        <div class="field-group">
+          <label class="field-label">Compensation Details</label>
+          <input id="f-salary" type="text" placeholder="e.g. $140,000 / yr" class="field-input">
+        </div>
 
-  function onSearch() {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(loadList, 350);
-  }
+        <div class="field-group">
+          <label class="field-label">Internal Notes</label>
+          <textarea id="f-notes" class="field-input h-28 resize-none" placeholder="Add specific details or interview feedback..."></textarea>
+        </div>
+      </div>
 
-  // ---- Modal ----
+      <div class="flex flex-col md:flex-row gap-4 mt-10">
+        <button onclick="closeModal()" class="order-2 md:order-1 flex-1 py-3 text-slate-400 hover:text-black transition-colors font-bold uppercase tracking-widest text-xs">Discard</button>
+        <button id="btn-save" onclick="saveApp()" class="order-1 md:order-2 flex-1 btn-black">Save Application</button>
+      </div>
+    </div>
+  </div>
 
-  function openModal() {
-    editingId = null;
-    document.getElementById('modal-title').textContent = 'Add Application';
-    document.getElementById('btn-save').textContent = 'Save Application';
-    clearForm();
-    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('overlay').classList.add('open');
-    setTimeout(() => document.getElementById('f-role').focus(), 100);
-  }
+  <!-- Status Picker -->
+  <div id="status-pick" onclick="closeStatusPick(event)" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-md items-center justify-center">
+    <div class="bg-white p-8 rounded-3xl min-w-[320px] shadow-2xl">
+      <h3 class="field-label mb-6 text-center">Update Status</h3>
+      <div class="space-y-2">
+        <button onclick="pickStatus('APPLIED')" class="w-full text-left p-4 rounded-2xl hover:bg-black hover:text-white transition-all font-semibold">Applied</button>
+        <button onclick="pickStatus('INTERVIEW')" class="w-full text-left p-4 rounded-2xl hover:bg-black hover:text-white transition-all font-semibold">Interview</button>
+        <button onclick="pickStatus('OFFER')" class="w-full text-left p-4 rounded-2xl hover:bg-black hover:text-white transition-all font-semibold">Offer</button>
+        <button onclick="pickStatus('REJECTED')" class="w-full text-left p-4 rounded-2xl hover:bg-black hover:text-white transition-all font-semibold">Rejected</button>
+      </div>
+    </div>
+  </div>
 
-  async function openEdit(id) {
-    try {
-      const app = await apiFetch(`${API}/${id}`);
-      editingId = id;
-      document.getElementById('modal-title').textContent = 'Edit Application';
-      document.getElementById('btn-save').textContent = 'Update Application';
-      document.getElementById('f-role').value = app.role;
-      document.getElementById('f-company').value = app.company;
-      document.getElementById('f-type').value = app.type;
-      document.getElementById('f-status').value = app.status;
-      document.getElementById('f-date').value = app.dateApplied;
-      document.getElementById('f-location').value = app.location || '';
-      document.getElementById('f-salary').value = app.salaryRange || '';
-      document.getElementById('f-notes').value = app.notes || '';
-      document.getElementById('overlay').classList.add('open');
-    } catch (e) {
-      showToast('Failed to load application', 'error');
-    }
-  }
+  <script>
+    const API = window.location.origin + '/api/applications';
+    let activeFilter = 'all';
+    let searchTimer = null;
+    let editingId = null;
+    let statusTargetId = null;
 
-  function closeModal() {
-    document.getElementById('overlay').classList.remove('open');
-  }
+    // Sliding Cursor Logic
+    const nav = document.getElementById('filter-nav');
+    const cursor = document.getElementById('nav-cursor');
+    const tabs = document.querySelectorAll('.nav-tab');
 
-  function overlayClick(e) {
-    if (e.target === document.getElementById('overlay')) closeModal();
-  }
-
-  function clearForm() {
-    ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('f-type').value = 'INTERNSHIP';
-    document.getElementById('f-status').value = 'APPLIED';
-  }
-
-  // ---- Save ----
-
-  async function saveApp() {
-    const role = document.getElementById('f-role').value.trim();
-    const company = document.getElementById('f-company').value.trim();
-    const date = document.getElementById('f-date').value;
-
-    if (!role || !company || !date) {
-      showToast('Role, company and date are required.', 'error');
-      return;
-    }
-
-    const payload = {
-      role,
-      company,
-      type: document.getElementById('f-type').value,
-      status: document.getElementById('f-status').value,
-      dateApplied: date,
-      location: document.getElementById('f-location').value.trim() || null,
-      salaryRange: document.getElementById('f-salary').value.trim() || null,
-      notes: document.getElementById('f-notes').value.trim() || null
-    };
-
-    const btn = document.getElementById('btn-save');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-
-    try {
-      if (editingId) {
-        await apiFetch(`${API}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) });
-        showToast('Application updated!', 'success');
-      } else {
-        await apiFetch(API, { method: 'POST', body: JSON.stringify(payload) });
-        showToast('Application added!', 'success');
+    function updateCursor(tab) {
+      if (!tab) {
+        cursor.style.opacity = '0';
+        return;
       }
-      closeModal();
-      loadList();
-      loadStats();
-    } catch (e) {
-      showToast(e.message || 'Save failed', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = editingId ? 'Update Application' : 'Save Application';
+      cursor.style.width = `${tab.offsetWidth}px`;
+      cursor.style.left = `${tab.offsetLeft}px`;
+      cursor.style.opacity = '1';
     }
-  }
 
-  // ---- Delete ----
+    tabs.forEach(tab => {
+      tab.addEventListener('mouseenter', () => updateCursor(tab));
+    });
 
-  async function deleteApp(id) {
-    if (!confirm('Delete this application?')) return;
-    try {
-      await apiFetch(`${API}/${id}`, { method: 'DELETE' });
-      showToast('Deleted.', 'success');
-      loadList();
-      loadStats();
-    } catch (e) {
-      showToast('Delete failed', 'error');
-    }
-  }
+    nav.addEventListener('mouseleave', () => {
+      const activeTab = document.querySelector('.nav-tab.active');
+      updateCursor(activeTab);
+    });
 
-  // ---- Status picker ----
+    // Initialize cursor position
+    setTimeout(() => updateCursor(document.querySelector('.nav-tab.active')), 100);
 
-  function openStatusPick(id) {
-    statusTargetId = id;
-    document.getElementById('status-pick').classList.add('open');
-  }
-
-  function closeStatusPick(e) {
-    if (e.target === document.getElementById('status-pick')) {
-      document.getElementById('status-pick').classList.remove('open');
-    }
-  }
-
-  async function pickStatus(status) {
-    document.getElementById('status-pick').classList.remove('open');
-    try {
-      await apiFetch(`${API}/${statusTargetId}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status })
+    async function apiFetch(url, options = {}) {
+      const res = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
       });
-      showToast('Status updated!', 'success');
-      loadList();
-      loadStats();
-    } catch (e) {
-      showToast('Status update failed', 'error');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Request failed' }));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
+      return res.status === 204 ? null : res.json();
     }
-  }
 
-  // ---- Utilities ----
+    async function loadStats() {
+      try {
+        const stats = await apiFetch(`${API}/stats`);
+        document.getElementById('cnt-applied').textContent = stats.applied;
+        document.getElementById('cnt-interview').textContent = stats.interview;
+        document.getElementById('cnt-offer').textContent = stats.offer;
+        document.getElementById('cnt-rejected').textContent = stats.rejected;
+      } catch (e) {}
+    }
 
-  function esc(str) {
-    if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+    async function loadList() {
+      const list = document.getElementById('list');
+      list.innerHTML = '<div class="text-center py-20 text-slate-200 mono text-xs uppercase tracking-widest animate-pulse">Synchronizing Data...</div>';
 
-  function showToast(msg, type = 'success') {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-    const t = document.createElement('div');
-    t.className = `toast ${type}`;
-    t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-  }
+      const search = document.getElementById('search').value.trim();
+      let url = API + '?';
+      if (search) url += `search=${encodeURIComponent(search)}`;
+      else if (activeFilter !== 'all') url += `status=${activeFilter}`;
 
-  function showError(msg) {
-    const b = document.getElementById('error-banner');
-    b.textContent = '⚠ ' + msg;
-    b.style.display = 'block';
-  }
+      try {
+        const apps = await apiFetch(url);
+        hideError();
+        renderList(apps);
+      } catch (e) {
+        showError('Network Error: Unable to sync with master database.');
+        list.innerHTML = '';
+      }
+    }
 
-  function hideError() {
-    document.getElementById('error-banner').style.display = 'none';
-  }
+    function renderList(apps) {
+      const list = document.getElementById('list');
+      if (apps.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-32 border-2 border-dashed border-slate-100 rounded-3xl">
+            <p class="text-slate-300 mono text-xs uppercase tracking-widest">No Entries Detected</p>
+          </div>`;
+        return;
+      }
 
-  // ---- Init ----
-  loadStats();
-  loadList();
-</script>
+      list.innerHTML = apps.map(a => `
+        <div class="app-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <h3 class="text-lg font-bold tracking-tight">${esc(a.role)}</h3>
+              <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-tighter">${a.type}</span>
+            </div>
+            <p class="text-slate-400 font-medium text-sm mb-4">${esc(a.company)}</p>
+            <div class="flex flex-wrap gap-5">
+              <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
+                <span class="text-slate-200 font-bold">Applied:</span> ${a.dateApplied}
+              </div>
+              ${a.location ? `
+              <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
+                <span class="text-slate-200 font-bold">Loc:</span> ${esc(a.location)}
+              </div>` : ''}
+              ${a.salaryRange ? `
+              <div class="flex items-center gap-2 text-[10px] mono text-emerald-500 uppercase tracking-wider">
+                <span class="text-emerald-100 font-bold">Comp:</span> ${esc(a.salaryRange)}
+              </div>` : ''}
+            </div>
+          </div>
+          <div class="flex items-center gap-5 w-full md:w-auto">
+            <button onclick="openStatusPick(${a.id})" class="badge badge-${a.status.toLowerCase()} transition-all hover:scale-105">
+              ${a.status}
+            </button>
+            <div class="flex gap-2">
+              <button onclick="openEdit(${a.id})" class="p-2 text-slate-300 hover:text-black transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button onclick="deleteApp(${a.id})" class="p-2 text-slate-300 hover:text-rose-500 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function setFilter(f, el) {
+      activeFilter = f;
+      document.querySelectorAll('.nav-tab').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      updateCursor(el);
+      loadList();
+    }
+
+    function onSearch() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadList, 350);
+    }
+
+    function openModal() {
+      editingId = null;
+      document.getElementById('modal-title').textContent = 'ADD RECORD';
+      document.getElementById('btn-save').textContent = 'Save Application';
+      clearForm();
+      document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('overlay').classList.replace('hidden', 'flex');
+    }
+
+    async function openEdit(id) {
+      try {
+        const app = await apiFetch(`${API}/${id}`);
+        editingId = id;
+        document.getElementById('modal-title').textContent = 'EDIT RECORD';
+        document.getElementById('btn-save').textContent = 'Update Application';
+        document.getElementById('f-role').value = app.role;
+        document.getElementById('f-company').value = app.company;
+        document.getElementById('f-type').value = app.type;
+        document.getElementById('f-status').value = app.status;
+        document.getElementById('f-date').value = app.dateApplied;
+        document.getElementById('f-location').value = app.location || '';
+        document.getElementById('f-salary').value = app.salaryRange || '';
+        document.getElementById('f-notes').value = app.notes || '';
+        document.getElementById('overlay').classList.replace('hidden', 'flex');
+      } catch (e) { showToast('Load failed', 'error'); }
+    }
+
+    function closeModal() { document.getElementById('overlay').classList.replace('flex', 'hidden'); }
+    function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+    function clearForm() {
+      ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-type').value = 'INTERNSHIP';
+      document.getElementById('f-status').value = 'APPLIED';
+    }
+
+    async function saveApp() {
+      const payload = {
+        role: document.getElementById('f-role').value.trim(),
+        company: document.getElementById('f-company').value.trim(),
+        type: document.getElementById('f-type').value,
+        status: document.getElementById('f-status').value,
+        dateApplied: document.getElementById('f-date').value,
+        location: document.getElementById('f-location').value.trim() || null,
+        salaryRange: document.getElementById('f-salary').value.trim() || null,
+        notes: document.getElementById('f-notes').value.trim() || null
+      };
+
+      if (!payload.role || !payload.company || !payload.dateApplied) {
+        showToast('Required fields missing', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        if (editingId) await apiFetch(`${API}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        else await apiFetch(API, { method: 'POST', body: JSON.stringify(payload) });
+        showToast(editingId ? 'Record updated' : 'Application tracked', 'success');
+        closeModal();
+        loadList();
+        loadStats();
+      } catch (e) { showToast(e.message, 'error'); }
+      finally {
+        btn.disabled = false;
+        btn.textContent = editingId ? 'Update Application' : 'Save Application';
+      }
+    }
+
+    async function deleteApp(id) {
+      if (!confirm('Permanently remove this record?')) return;
+      try {
+        await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+        showToast('Record removed', 'success');
+        loadList();
+        loadStats();
+      } catch (e) { showToast('Delete failed', 'error'); }
+    }
+
+    function openStatusPick(id) {
+      statusTargetId = id;
+      document.getElementById('status-pick').classList.replace('hidden', 'flex');
+    }
+
+    function closeStatusPick(e) {
+      if (e.target === document.getElementById('status-pick')) {
+        document.getElementById('status-pick').classList.replace('flex', 'hidden');
+      }
+    }
+
+    async function pickStatus(status) {
+      document.getElementById('status-pick').classList.replace('flex', 'hidden');
+      try {
+        await apiFetch(`${API}/${statusTargetId}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status })
+        });
+        showToast('Status updated', 'success');
+        loadList();
+        loadStats();
+      } catch (e) { showToast('Update failed', 'error'); }
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `fixed bottom-10 right-10 z-[100] px-8 py-4 rounded-2xl bg-black text-white text-xs mono uppercase tracking-widest shadow-2xl animate-in slide-in-from-bottom-10 duration-500`;
+      if (type === 'error') t.classList.add('text-rose-500');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
+
+    function showError(msg) {
+      const b = document.getElementById('error-banner');
+      b.textContent = msg;
+      b.classList.remove('hidden');
+    }
+
+    function hideError() { document.getElementById('error-banner').classList.add('hidden'); }
+
+    loadStats();
+    loadList();
+  </script>
 </body>
 </html>
