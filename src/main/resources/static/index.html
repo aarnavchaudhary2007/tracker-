@@ -145,28 +145,36 @@
     }
 
     /* Trash Bin Animation */
-    .trash-icon { position: relative; width: 48px; height: 48px; }
+    .trash-icon {
+      position: relative;
+      width: 32px;
+      height: 32px;
+    }
+    .trash-icon svg { overflow: visible; }
     .trash-lid {
-      transform-origin: 90% 100%;
-      transform: rotate(-25deg);
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: 25% 100%;
+      transform: rotate(-15deg);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .trash-lid.closing { transform: rotate(0deg); }
-    .trash-body-lines { stroke-dasharray: 24; stroke-dashoffset: 0; transition: stroke-dashoffset 0.4s ease 0.3s; }
-    .trash-deleting .trash-body-lines { stroke-dashoffset: 24; }
+    .trash-body-lines {
+      stroke-dasharray: 20;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.3s ease 0.25s;
+    }
+    .trash-deleting .trash-body-lines { stroke-dashoffset: 20; }
     @keyframes trashShake {
       0%, 100% { transform: rotate(0deg); }
-      20% { transform: rotate(-8deg); }
-      40% { transform: rotate(8deg); }
-      60% { transform: rotate(-5deg); }
-      80% { transform: rotate(5deg); }
+      25% { transform: rotate(-6deg); }
+      50% { transform: rotate(6deg); }
+      75% { transform: rotate(-3deg); }
     }
     @keyframes trashFall {
       0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(20px) scale(0.7); opacity: 0; }
+      100% { transform: translateY(12px) scale(0.8); opacity: 0; }
     }
-    .trash-shake { animation: trashShake 0.5s ease; }
-    .trash-fall { animation: trashFall 0.4s ease forwards; }
+    .trash-shake { animation: trashShake 0.4s ease; }
+    .trash-fall { animation: trashFall 0.35s ease forwards; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50/30">
@@ -338,19 +346,17 @@
   <!-- Delete Confirmation Modal -->
   <div id="delete-confirm" onclick="closeDeleteConfirm(event)" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-md items-center justify-center p-6">
     <div class="bg-white p-8 rounded-3xl max-w-sm w-full shadow-2xl text-center">
-      <div id="trash-anim-wrapper" class="w-16 h-16 mx-auto mb-6 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
+      <div id="trash-anim-wrapper" class="w-20 h-20 mx-auto mb-6 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
         <div class="trash-icon">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <!-- Lid (separate group for rotation) -->
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <g id="trash-lid" class="trash-lid">
-              <line x1="12" y1="16" x2="36" y2="16" stroke="#e11d48" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M19 16v-3a2 2 0 012-2h6a2 2 0 012 2v3" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
+              <line x1="7" y1="10" x2="25" y2="10" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 10V8a2 2 0 012-2h4a2 2 0 012 2v2" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
             </g>
-            <!-- Body -->
             <g id="trash-body">
-              <path d="M15 16l1.5 20h15L33 16" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line class="trash-body-lines" x1="21" y1="22" x2="21" y2="32" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
-              <line class="trash-body-lines" x1="27" y1="22" x2="27" y2="32" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M9 10l1 18h12l1-18" stroke="#e11d48" stroke-width="1.5" stroke-linejoin="round"/>
+              <line class="trash-body-lines" x1="14" y1="15" x2="14" y2="24" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
+              <line class="trash-body-lines" x1="18" y1="15" x2="18" y2="24" stroke="#e11d48" stroke-width="1.5" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
