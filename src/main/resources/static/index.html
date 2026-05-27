@@ -175,6 +175,27 @@
     }
     .trash-shake { animation: trashShake 0.4s ease; }
     .trash-fall { animation: trashFall 0.35s ease forwards; }
+
+    /* Modal Crunch & Shake Animation */
+    @keyframes modalShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15%, 45%, 75% { transform: translate(-1.5px, 0.5px) rotate(-0.3deg); }
+      30%, 60%, 90% { transform: translate(1.5px, -0.5px) rotate(0.3deg); }
+    }
+    .modal-shake { animation: modalShake 0.4s ease; }
+
+    @keyframes modalCrunch {
+      0% { transform: scale(1); opacity: 1; }
+      15% { transform: scale(1.03, 0.9); opacity: 1; }
+      100% { transform: scale(0.6, 0) translateY(60px); opacity: 0; }
+    }
+    .modal-crunch { animation: modalCrunch 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+    @keyframes backdropFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .backdrop-fade-out { animation: backdropFadeOut 0.35s ease forwards; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50/30">
@@ -638,10 +659,15 @@
       const lid = document.getElementById('trash-lid');
       const wrapper = document.getElementById('trash-anim-wrapper');
       const icon = wrapper.querySelector('.trash-icon');
+      const modalContent = document.querySelector('#delete-confirm > div');
+      const backdrop = document.getElementById('delete-confirm');
+
       lid.classList.remove('closing');
       icon.classList.remove('trash-deleting', 'trash-shake', 'trash-fall');
+      modalContent.classList.remove('modal-shake', 'modal-crunch');
+      backdrop.classList.remove('backdrop-fade-out');
       wrapper.style.opacity = '1';
-      document.getElementById('delete-confirm').classList.replace('hidden', 'flex');
+      backdrop.classList.replace('hidden', 'flex');
     }
 
     function cancelDelete() {
@@ -659,18 +685,23 @@
       btn.disabled = true;
       btn.textContent = 'Deleting...';
 
-      // Animate: close lid → shake → fall
+      // Animate: close lid → shake → fall + crunch
       const lid = document.getElementById('trash-lid');
       const wrapper = document.getElementById('trash-anim-wrapper');
       const icon = wrapper.querySelector('.trash-icon');
+      const modalContent = document.querySelector('#delete-confirm > div');
+      const backdrop = document.getElementById('delete-confirm');
       lid.classList.add('closing');
 
       await new Promise(r => setTimeout(r, 350));
       icon.classList.add('trash-shake');
+      modalContent.classList.add('modal-shake');
 
       await new Promise(r => setTimeout(r, 500));
       icon.classList.add('trash-deleting');
       icon.classList.add('trash-fall');
+      modalContent.classList.add('modal-crunch');
+      backdrop.classList.add('backdrop-fade-out');
 
       await new Promise(r => setTimeout(r, 400));
 
