@@ -192,7 +192,7 @@
         <input id="search" type="text" placeholder="Search by role, company..." oninput="onSearch()" 
                class="w-full bg-white border border-slate-200 rounded-full px-6 py-3 text-sm outline-none focus:border-black transition-all shadow-sm">
       </div>
-      <button onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
+      <button id="static-add-btn" onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Application
       </button>
@@ -220,12 +220,12 @@
       <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Position Name</label>
-            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input">
+            <label class="field-label">Position Name <span class="text-rose-500">*</span></label>
+            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input" oninput="clearInputError('f-role')">
           </div>
           <div class="field-group">
-            <label class="field-label">Company / Organization</label>
-            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input">
+            <label class="field-label">Company / Organization <span class="text-rose-500">*</span></label>
+            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input" oninput="clearInputError('f-company')">
           </div>
         </div>
 
@@ -250,8 +250,8 @@
 
         <div class="grid grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Application Date</label>
-            <input id="f-date" type="date" class="field-input">
+            <label class="field-label">Application Date <span class="text-rose-500">*</span></label>
+            <input id="f-date" type="date" class="field-input" oninput="clearInputError('f-date')">
           </div>
           <div class="field-group">
             <label class="field-label">Location</label>
@@ -289,6 +289,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Action Button -->
+  <button id="floating-add-btn" onclick="openModal()" style="transform:scale(0);opacity:0;" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
 
   <script>
     const API = window.location.origin + '/api/applications';
@@ -376,41 +381,104 @@
       }
 
       list.innerHTML = apps.map(a => `
-        <div class="app-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-1">
-              <h3 class="text-lg font-bold tracking-tight">${esc(a.role)}</h3>
-              <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-tighter">${a.type}</span>
-            </div>
-            <p class="text-slate-400 font-medium text-sm mb-4">${esc(a.company)}</p>
-            <div class="flex flex-wrap gap-5">
-              <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
-                <span class="text-slate-200 font-bold">Applied:</span> ${a.dateApplied}
+        <div id="card-${a.id}" onclick="toggleExpand(${a.id})" class="app-card p-6 flex flex-col gap-4 cursor-pointer hover:border-slate-300 transition-all duration-300">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 w-full">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-lg font-bold tracking-tight flex items-center gap-2">
+                  ${esc(a.role)}
+                  <svg id="caret-${a.id}" class="w-4 h-4 text-slate-300 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </h3>
+                <span class="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-tighter">${a.type}</span>
               </div>
-              ${a.location ? `
-              <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
-                <span class="text-slate-200 font-bold">Loc:</span> ${esc(a.location)}
-              </div>` : ''}
-              ${a.salaryRange ? `
-              <div class="flex items-center gap-2 text-[10px] mono text-emerald-500 uppercase tracking-wider">
-                <span class="text-emerald-100 font-bold">Comp:</span> ${esc(a.salaryRange)}
-              </div>` : ''}
+              <p class="text-slate-400 font-medium text-sm mb-4">${esc(a.company)}</p>
+              <div class="flex flex-wrap gap-5">
+                <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
+                  <span class="text-slate-200 font-bold">Applied:</span> ${a.dateApplied}
+                </div>
+                ${a.location ? `
+                <div class="flex items-center gap-2 text-[10px] mono text-slate-400 uppercase tracking-wider">
+                  <span class="text-slate-200 font-bold">Loc:</span> ${esc(a.location)}
+                </div>` : ''}
+                ${a.salaryRange ? `
+                <div class="flex items-center gap-2 text-[10px] mono text-emerald-500 uppercase tracking-wider">
+                  <span class="text-emerald-100 font-bold">Comp:</span> ${esc(a.salaryRange)}
+                </div>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center gap-5 w-full md:w-auto">
+              <button onclick="event.stopPropagation(); openStatusPick(${a.id})" class="badge badge-${a.status.toLowerCase()} transition-all hover:scale-105">
+                ${a.status}
+              </button>
+              <div class="flex gap-2">
+                <button onclick="event.stopPropagation(); openEdit(${a.id})" class="p-2 text-slate-300 hover:text-black transition-colors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button onclick="event.stopPropagation(); deleteApp(${a.id})" class="p-2 text-slate-300 hover:text-rose-500 transition-colors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="flex items-center gap-5 w-full md:w-auto">
-            <button onclick="openStatusPick(${a.id})" class="badge badge-${a.status.toLowerCase()} transition-all hover:scale-105">
-              ${a.status}
-            </button>
-            <div class="flex gap-2">
-              <button onclick="openEdit(${a.id})" class="p-2 text-slate-300 hover:text-black transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              <button onclick="deleteApp(${a.id})" class="p-2 text-slate-300 hover:text-rose-500 transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              </button>
+          
+          <!-- Expandable Details Drawer -->
+          <div id="details-${a.id}" style="max-height:0;opacity:0;overflow:hidden;" class="transition-all duration-300 ease-in-out w-full border-t border-slate-100/50">
+            <div class="pt-6 pb-2 space-y-4">
+              <div>
+                <span class="field-label block mb-2">Internal Notes</span>
+                <div class="bg-slate-50/50 border border-slate-100 rounded-xl p-4 text-sm text-slate-600 mono leading-relaxed whitespace-pre-wrap">
+                  ${a.notes ? esc(a.notes) : '<em class="text-slate-400 font-medium">No notes provided for this record.</em>'}
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-6 pt-2">
+                ${a.createdAt ? `
+                <div class="text-[9px] mono text-slate-400 uppercase tracking-widest">
+                  <span class="font-bold text-slate-300">Added:</span> ${a.createdAt.split('T')[0]} ${a.createdAt.split('T')[1] ? a.createdAt.split('T')[1].substring(0,5) : ''}
+                </div>` : ''}
+                ${a.updatedAt ? `
+                <div class="text-[9px] mono text-slate-400 uppercase tracking-widest">
+                  <span class="font-bold text-slate-300">Last Synced:</span> ${a.updatedAt.split('T')[0]} ${a.updatedAt.split('T')[1] ? a.updatedAt.split('T')[1].substring(0,5) : ''}
+                </div>` : ''}
+              </div>
             </div>
           </div>
         </div>`).join('');
+    }
+
+    function toggleExpand(id) {
+      const details = document.getElementById(`details-${id}`);
+      const caret = document.getElementById(`caret-${id}`);
+      const card = document.getElementById(`card-${id}`);
+
+      if (!details || !caret) return;
+
+      const isExpanded = details.style.maxHeight && details.style.maxHeight !== '0px';
+
+      if (isExpanded) {
+        details.style.maxHeight = '0px';
+        details.style.opacity = '0';
+        caret.classList.remove('rotate-180');
+        card.classList.remove('border-slate-300');
+      } else {
+        // Collapse all other active cards for a clean accordion effect
+        document.querySelectorAll('[id^="details-"]').forEach(el => {
+          if (el.id !== `details-${id}`) {
+            el.style.maxHeight = '0px';
+            el.style.opacity = '0';
+            const otherId = el.id.split('-')[1];
+            const otherCaret = document.getElementById(`caret-${otherId}`);
+            const otherCard = document.getElementById(`card-${otherId}`);
+            if (otherCaret) otherCaret.classList.remove('rotate-180');
+            if (otherCard) otherCard.classList.remove('border-slate-300');
+          }
+        });
+
+        // Set to scrollHeight for smooth auto-expanding height
+        details.style.maxHeight = `${details.scrollHeight}px`;
+        details.style.opacity = '1';
+        caret.classList.add('rotate-180');
+        card.classList.add('border-slate-300');
+      }
     }
 
     function setFilter(f, el) {
@@ -453,16 +521,45 @@
       } catch (e) { showToast('Load failed', 'error'); }
     }
 
-    function closeModal() { document.getElementById('overlay').classList.replace('flex', 'hidden'); }
+    function clearInputError(id) {
+      const input = document.getElementById(id);
+      input.classList.remove('border-rose-500', 'bg-rose-50/20');
+      const errEl = document.getElementById(`${id}-error`);
+      if (errEl) errEl.remove();
+    }
+
+    function clearAllErrors() {
+      ['f-role', 'f-company', 'f-date'].forEach(id => clearInputError(id));
+    }
+
+    function showInputError(id, msg) {
+      const input = document.getElementById(id);
+      input.classList.add('border-rose-500', 'bg-rose-50/20');
+      if (document.getElementById(`${id}-error`)) return;
+      const err = document.createElement('span');
+      err.id = `${id}-error`;
+      err.className = 'text-[10px] text-rose-500 font-semibold mono mt-1';
+      err.textContent = msg;
+      input.parentNode.appendChild(err);
+    }
+
+    function closeModal() { 
+      clearAllErrors();
+      document.getElementById('overlay').classList.replace('flex', 'hidden'); 
+    }
+    
     function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
     function clearForm() {
       ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-type').value = 'INTERNSHIP';
       document.getElementById('f-status').value = 'APPLIED';
+      clearAllErrors();
     }
 
     async function saveApp() {
+      clearAllErrors();
+
       const payload = {
         role: document.getElementById('f-role').value.trim(),
         company: document.getElementById('f-company').value.trim(),
@@ -474,7 +571,21 @@
         notes: document.getElementById('f-notes').value.trim() || null
       };
 
-      if (!payload.role || !payload.company || !payload.dateApplied) {
+      let hasErrors = false;
+      if (!payload.role) {
+        showInputError('f-role', 'Position name is required');
+        hasErrors = true;
+      }
+      if (!payload.company) {
+        showInputError('f-company', 'Company / organization is required');
+        hasErrors = true;
+      }
+      if (!payload.dateApplied) {
+        showInputError('f-date', 'Application date is required');
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
         showToast('Required fields missing', 'error');
         return;
       }
@@ -545,7 +656,7 @@
       setTimeout(() => t.remove(), 4000);
     }
 
-    function showError(msg) {
+     function showError(msg) {
       const b = document.getElementById('error-banner');
       b.textContent = msg;
       b.classList.remove('hidden');
@@ -555,6 +666,25 @@
 
     loadStats();
     loadList();
+
+    function initFAB() {
+      const staticBtn = document.getElementById('static-add-btn');
+      const floatingBtn = document.getElementById('floating-add-btn');
+      if (!staticBtn || !floatingBtn) return;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            floatingBtn.style.transform = 'scale(0)';
+            floatingBtn.style.opacity = '0';
+          } else {
+            floatingBtn.style.transform = 'scale(1)';
+            floatingBtn.style.opacity = '1';
+          }
+        });
+      }, { threshold: 0 });
+      observer.observe(staticBtn);
+    }
+    initFAB();
   </script>
 </body>
 </html>
