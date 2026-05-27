@@ -192,7 +192,7 @@
         <input id="search" type="text" placeholder="Search by role, company..." oninput="onSearch()" 
                class="w-full bg-white border border-slate-200 rounded-full px-6 py-3 text-sm outline-none focus:border-black transition-all shadow-sm">
       </div>
-      <button onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
+      <button id="static-add-btn" onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Application
       </button>
@@ -545,7 +545,7 @@
       setTimeout(() => t.remove(), 4000);
     }
 
-    function showError(msg) {
+     function showError(msg) {
       const b = document.getElementById('error-banner');
       b.textContent = msg;
       b.classList.remove('hidden');
@@ -555,6 +555,31 @@
 
     loadStats();
     loadList();
+
+    // Floating Action Button Intersection Observer
+    const staticBtn = document.getElementById('static-add-btn');
+    const floatingBtn = document.getElementById('floating-add-btn');
+    
+    if (staticBtn && floatingBtn) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            floatingBtn.classList.add('scale-0', 'opacity-0');
+            floatingBtn.classList.remove('scale-100', 'opacity-100');
+          } else {
+            floatingBtn.classList.remove('scale-0', 'opacity-0');
+            floatingBtn.classList.add('scale-100', 'opacity-100');
+          }
+        });
+      }, { threshold: 0 });
+      
+      observer.observe(staticBtn);
+    }
   </script>
+
+  <!-- Floating Action Button -->
+  <button id="floating-add-btn" onclick="openModal()" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 transform scale-0 opacity-0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
 </body>
 </html>
