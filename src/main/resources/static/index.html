@@ -220,12 +220,12 @@
       <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Position Name</label>
-            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input">
+            <label class="field-label">Position Name <span class="text-rose-500">*</span></label>
+            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input" oninput="clearInputError('f-role')">
           </div>
           <div class="field-group">
-            <label class="field-label">Company / Organization</label>
-            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input">
+            <label class="field-label">Company / Organization <span class="text-rose-500">*</span></label>
+            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input" oninput="clearInputError('f-company')">
           </div>
         </div>
 
@@ -250,8 +250,8 @@
 
         <div class="grid grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Application Date</label>
-            <input id="f-date" type="date" class="field-input">
+            <label class="field-label">Application Date <span class="text-rose-500">*</span></label>
+            <input id="f-date" type="date" class="field-input" oninput="clearInputError('f-date')">
           </div>
           <div class="field-group">
             <label class="field-label">Location</label>
@@ -453,16 +453,45 @@
       } catch (e) { showToast('Load failed', 'error'); }
     }
 
-    function closeModal() { document.getElementById('overlay').classList.replace('flex', 'hidden'); }
+    function clearInputError(id) {
+      const input = document.getElementById(id);
+      input.classList.remove('border-rose-500', 'bg-rose-50/20');
+      const errEl = document.getElementById(`${id}-error`);
+      if (errEl) errEl.remove();
+    }
+
+    function clearAllErrors() {
+      ['f-role', 'f-company', 'f-date'].forEach(id => clearInputError(id));
+    }
+
+    function showInputError(id, msg) {
+      const input = document.getElementById(id);
+      input.classList.add('border-rose-500', 'bg-rose-50/20');
+      if (document.getElementById(`${id}-error`)) return;
+      const err = document.createElement('span');
+      err.id = `${id}-error`;
+      err.className = 'text-[10px] text-rose-500 font-semibold mono mt-1';
+      err.textContent = msg;
+      input.parentNode.appendChild(err);
+    }
+
+    function closeModal() { 
+      clearAllErrors();
+      document.getElementById('overlay').classList.replace('flex', 'hidden'); 
+    }
+    
     function overlayClick(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
     function clearForm() {
       ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-type').value = 'INTERNSHIP';
       document.getElementById('f-status').value = 'APPLIED';
+      clearAllErrors();
     }
 
     async function saveApp() {
+      clearAllErrors();
+
       const payload = {
         role: document.getElementById('f-role').value.trim(),
         company: document.getElementById('f-company').value.trim(),
@@ -474,7 +503,21 @@
         notes: document.getElementById('f-notes').value.trim() || null
       };
 
-      if (!payload.role || !payload.company || !payload.dateApplied) {
+      let hasErrors = false;
+      if (!payload.role) {
+        showInputError('f-role', 'Position name is required');
+        hasErrors = true;
+      }
+      if (!payload.company) {
+        showInputError('f-company', 'Company / organization is required');
+        hasErrors = true;
+      }
+      if (!payload.dateApplied) {
+        showInputError('f-date', 'Application date is required');
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
         showToast('Required fields missing', 'error');
         return;
       }
