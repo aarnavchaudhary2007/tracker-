@@ -290,6 +290,11 @@
     </div>
   </div>
 
+  <!-- Floating Action Button -->
+  <button id="floating-add-btn" onclick="openModal()" style="transform:scale(0);opacity:0;" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
   <script>
     const API = window.location.origin + '/api/applications';
     let activeFilter = 'all';
@@ -417,7 +422,7 @@
           </div>
           
           <!-- Expandable Details Drawer -->
-          <div id="details-${a.id}" class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out w-full border-t border-slate-100/50">
+          <div id="details-${a.id}" style="max-height:0;opacity:0;overflow:hidden;" class="transition-all duration-300 ease-in-out w-full border-t border-slate-100/50">
             <div class="pt-6 pb-2 space-y-4">
               <div>
                 <span class="field-label block mb-2">Internal Notes</span>
@@ -662,30 +667,24 @@
     loadStats();
     loadList();
 
-    // Floating Action Button Intersection Observer
-    const staticBtn = document.getElementById('static-add-btn');
-    const floatingBtn = document.getElementById('floating-add-btn');
-    
-    if (staticBtn && floatingBtn) {
+    function initFAB() {
+      const staticBtn = document.getElementById('static-add-btn');
+      const floatingBtn = document.getElementById('floating-add-btn');
+      if (!staticBtn || !floatingBtn) return;
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            floatingBtn.classList.add('scale-0', 'opacity-0');
-            floatingBtn.classList.remove('scale-100', 'opacity-100');
+            floatingBtn.style.transform = 'scale(0)';
+            floatingBtn.style.opacity = '0';
           } else {
-            floatingBtn.classList.remove('scale-0', 'opacity-0');
-            floatingBtn.classList.add('scale-100', 'opacity-100');
+            floatingBtn.style.transform = 'scale(1)';
+            floatingBtn.style.opacity = '1';
           }
         });
       }, { threshold: 0 });
-      
       observer.observe(staticBtn);
     }
+    initFAB();
   </script>
-
-  <!-- Floating Action Button -->
-  <button id="floating-add-btn" onclick="openModal()" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 transform scale-0 opacity-0">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  </button>
 </body>
 </html>
