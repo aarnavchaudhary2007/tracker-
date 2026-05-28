@@ -208,7 +208,7 @@
         <input id="search" type="text" placeholder="Search by role, company..." oninput="onSearch()" 
                class="w-full bg-white border border-slate-200 rounded-full px-6 py-3 text-sm outline-none focus:border-black transition-all shadow-sm">
       </div>
-      <button onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
+      <button id="static-add-btn" onclick="openModal()" class="btn-black flex items-center gap-2 shadow-lg shadow-black/10">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         New Application
       </button>
@@ -236,12 +236,12 @@
       <div class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Position Name</label>
-            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input">
+            <label class="field-label">Position Name <span class="text-rose-500">*</span></label>
+            <input id="f-role" type="text" placeholder="e.g. Frontend Developer" class="field-input" oninput="clearInputError('f-role')">
           </div>
           <div class="field-group">
-            <label class="field-label">Company / Organization</label>
-            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input">
+            <label class="field-label">Company / Organization <span class="text-rose-500">*</span></label>
+            <input id="f-company" type="text" placeholder="e.g. Vercel" class="field-input" oninput="clearInputError('f-company')">
           </div>
         </div>
 
@@ -266,8 +266,8 @@
 
         <div class="grid grid-cols-2 gap-6">
           <div class="field-group">
-            <label class="field-label">Application Date</label>
-            <input id="f-date" type="date" class="field-input">
+            <label class="field-label">Application Date <span class="text-rose-500">*</span></label>
+            <input id="f-date" type="date" class="field-input" oninput="clearInputError('f-date')">
           </div>
           <div class="field-group">
             <label class="field-label">Location</label>
@@ -305,6 +305,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Action Button -->
+  <button id="floating-add-btn" onclick="openModal()" style="transform:scale(0);opacity:0;" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
 
   <script>
     const API = window.location.origin + '/api/applications';
@@ -494,9 +499,25 @@
       ['f-role','f-company','f-location','f-salary','f-notes'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('f-type').value = 'INTERNSHIP';
       document.getElementById('f-status').value = 'APPLIED';
+      clearAllErrors();
+    }
+
+    function clearInputError(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('border-rose-500', 'bg-rose-50');
+    }
+
+    function showInputError(id) {
+      const el = document.getElementById(id);
+      el.classList.add('border-rose-500', 'bg-rose-50');
+    }
+
+    function clearAllErrors() {
+      ['f-role', 'f-company', 'f-date'].forEach(clearInputError);
     }
 
     async function saveApp() {
+      clearAllErrors();
       const payload = {
         role: document.getElementById('f-role').value.trim(),
         company: document.getElementById('f-company').value.trim(),
@@ -508,7 +529,12 @@
         notes: document.getElementById('f-notes').value.trim() || null
       };
 
-      if (!payload.role || !payload.company || !payload.dateApplied) {
+      let hasErrors = false;
+      if (!payload.role) { showInputError('f-role'); hasErrors = true; }
+      if (!payload.company) { showInputError('f-company'); hasErrors = true; }
+      if (!payload.dateApplied) { showInputError('f-date'); hasErrors = true; }
+
+      if (hasErrors) {
         showToast('Required fields missing', 'error');
         return;
       }
@@ -587,8 +613,29 @@
 
     function hideError() { document.getElementById('error-banner').classList.add('hidden'); }
 
+    function initFAB() {
+      const staticBtn = document.getElementById('static-add-btn');
+      const floatingBtn = document.getElementById('floating-add-btn');
+      if (!staticBtn || !floatingBtn) return;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            floatingBtn.style.transform = 'scale(0)';
+            floatingBtn.style.opacity = '0';
+          } else {
+            floatingBtn.style.transform = 'scale(1)';
+            floatingBtn.style.opacity = '1';
+          }
+        });
+      }, { threshold: 0 });
+
+      observer.observe(staticBtn);
+    }
+
     loadStats();
     loadList();
+    initFAB();
   </script>
 </body>
 </html>
