@@ -143,6 +143,59 @@
       opacity: 0.8;
       transform: scale(1.02);
     }
+
+    /* Trash Bin Animation */
+    .trash-icon {
+      position: relative;
+      width: 32px;
+      height: 32px;
+    }
+    .trash-icon svg { overflow: visible; }
+    .trash-lid {
+      transform-origin: 25% 100%;
+      transform: rotate(-15deg);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .trash-lid.closing { transform: rotate(0deg); }
+    .trash-body-lines {
+      stroke-dasharray: 20;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.3s ease 0.25s;
+    }
+    .trash-deleting .trash-body-lines { stroke-dashoffset: 20; }
+    @keyframes trashShake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-6deg); }
+      50% { transform: rotate(6deg); }
+      75% { transform: rotate(-3deg); }
+    }
+    @keyframes trashFall {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(12px) scale(0.8); opacity: 0; }
+    }
+    .trash-shake { animation: trashShake 0.4s ease; }
+    .trash-fall { animation: trashFall 0.35s ease forwards; }
+
+    /* Modal Crunch & Shake Animation */
+    @keyframes modalShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15%, 45%, 75% { transform: translate(-1.5px, 0.5px) rotate(-0.3deg); }
+      30%, 60%, 90% { transform: translate(1.5px, -0.5px) rotate(0.3deg); }
+    }
+    .modal-shake { animation: modalShake 0.4s ease; }
+
+    @keyframes modalCrunch {
+      0% { transform: scale(1); opacity: 1; }
+      15% { transform: scale(1.03, 0.9); opacity: 1; }
+      100% { transform: scale(0.6, 0) translateY(60px); opacity: 0; }
+    }
+    .modal-crunch { animation: modalCrunch 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+    @keyframes backdropFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .backdrop-fade-out { animation: backdropFadeOut 0.35s ease forwards; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50/30">
@@ -310,6 +363,36 @@
   <button id="floating-add-btn" onclick="openModal()" style="transform:scale(0);opacity:0;" class="fixed bottom-8 right-8 z-[90] bg-black text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-confirm" onclick="closeDeleteConfirm(event)" class="hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-md items-center justify-center p-6">
+    <div class="bg-white p-8 rounded-3xl max-w-sm w-full border border-neutral-100 shadow-2xl text-center">
+      <div id="trash-anim-wrapper" class="w-20 h-20 mx-auto mb-6 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center">
+        <div class="trash-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <g id="trash-lid" class="trash-lid">
+              <line x1="7" y1="10" x2="25" y2="10" stroke="#000000" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 10V8a2 2 0 012-2h4a2 2 0 012 2v2" stroke="#000000" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+            <g id="trash-body">
+              <path d="M9 10l1 18h12l1-18" stroke="#000000" stroke-width="1.5" stroke-linejoin="round"/>
+              <line class="trash-body-lines" x1="14" y1="15" x2="14" y2="24" stroke="#000000" stroke-width="1.5" stroke-linecap="round"/>
+              <line class="trash-body-lines" x1="18" y1="15" x2="18" y2="24" stroke="#000000" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <h3 class="text-lg font-black tracking-tight mb-2">DELETE RECORD</h3>
+      <p class="text-sm text-slate-400 mb-1">This action cannot be undone.</p>
+      <div class="mb-8 mt-4">
+        <span id="delete-confirm-detail" class="inline-block bg-neutral-50 border border-neutral-200 px-3 py-1.5 rounded-lg text-xs text-neutral-600 mono uppercase tracking-wider"></span>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="cancelDelete()" class="flex-1 py-3 rounded-full border border-slate-200 text-slate-500 hover:border-black hover:text-black transition-all font-bold uppercase tracking-widest text-[10px]">Cancel</button>
+        <button id="btn-confirm-delete" onclick="confirmDelete()" class="flex-1 py-3 rounded-full bg-black text-white hover:bg-rose-600 hover:text-white transition-all font-bold uppercase tracking-widest text-[10px]">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API = window.location.origin + '/api/applications';
@@ -557,14 +640,82 @@
       }
     }
 
-    async function deleteApp(id) {
-      if (!confirm('Permanently remove this record?')) return;
+    let deleteTargetId = null;
+
+    function deleteApp(id) {
+      deleteTargetId = id;
+      const card = document.querySelector(`[onclick="deleteApp(${id})"]`);
+      let detail = '';
+      if (card) {
+        const row = card.closest('.app-card');
+        if (row) {
+          const role = row.querySelector('h3');
+          const company = row.querySelector('p');
+          if (role && company) detail = `${role.textContent.trim()} @ ${company.textContent.trim()}`;
+        }
+      }
+      document.getElementById('delete-confirm-detail').textContent = detail || 'this application';
+      // Reset animation state
+      const lid = document.getElementById('trash-lid');
+      const wrapper = document.getElementById('trash-anim-wrapper');
+      const icon = wrapper.querySelector('.trash-icon');
+      const modalContent = document.querySelector('#delete-confirm > div');
+      const backdrop = document.getElementById('delete-confirm');
+
+      lid.classList.remove('closing');
+      icon.classList.remove('trash-deleting', 'trash-shake', 'trash-fall');
+      modalContent.classList.remove('modal-shake', 'modal-crunch');
+      backdrop.classList.remove('backdrop-fade-out');
+      wrapper.style.opacity = '1';
+      backdrop.classList.replace('hidden', 'flex');
+    }
+
+    function cancelDelete() {
+      deleteTargetId = null;
+      document.getElementById('delete-confirm').classList.replace('flex', 'hidden');
+    }
+
+    function closeDeleteConfirm(e) {
+      if (e.target === document.getElementById('delete-confirm')) cancelDelete();
+    }
+
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+      const btn = document.getElementById('btn-confirm-delete');
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+
+      // Animate: close lid → shake → fall + crunch
+      const lid = document.getElementById('trash-lid');
+      const wrapper = document.getElementById('trash-anim-wrapper');
+      const icon = wrapper.querySelector('.trash-icon');
+      const modalContent = document.querySelector('#delete-confirm > div');
+      const backdrop = document.getElementById('delete-confirm');
+      lid.classList.add('closing');
+
+      await new Promise(r => setTimeout(r, 350));
+      icon.classList.add('trash-shake');
+      modalContent.classList.add('modal-shake');
+
+      await new Promise(r => setTimeout(r, 500));
+      icon.classList.add('trash-deleting');
+      icon.classList.add('trash-fall');
+      modalContent.classList.add('modal-crunch');
+      backdrop.classList.add('backdrop-fade-out');
+
+      await new Promise(r => setTimeout(r, 400));
+
       try {
-        await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+        await apiFetch(`${API}/${deleteTargetId}`, { method: 'DELETE' });
         showToast('Record removed', 'success');
         loadList();
         loadStats();
       } catch (e) { showToast('Delete failed', 'error'); }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        cancelDelete();
+      }
     }
 
     function openStatusPick(id) {
