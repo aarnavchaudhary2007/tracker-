@@ -1,0 +1,356 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Sliding Cursor Navigation Styles */
+.nav-container {
+  position: relative;
+  display: flex;
+  width: fit-content;
+  border-radius: 9999px;
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  padding: 4px;
+}
+
+.nav-tab {
+  position: relative;
+  z-index: 10;
+  display: block;
+  cursor: pointer;
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #ffffff;
+  mix-blend-mode: difference;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .nav-tab {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+.nav-cursor {
+  position: absolute;
+  z-index: 0;
+  height: 28px;
+  border-radius: 9999px;
+  background-color: #000000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .nav-cursor {
+    height: 38px;
+  }
+}
+
+/* Structured Form Styles */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #666666;
+  font-weight: 600;
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.field-input:focus {
+  border-color: #000000;
+  background: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+
+/* Card Styles */
+.app-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  transition: all 0.2s;
+  background: #ffffff;
+}
+
+.app-card:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+}
+
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.badge-applied { background: #f0f0f0; color: #000000; }
+.badge-interview { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.badge-offer { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.badge-rejected { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+.btn-black {
+  background: #000000;
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-black:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+/* Trash Bin Animation */
+.trash-icon {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+.trash-icon svg { overflow: visible; }
+.trash-lid {
+  transform-origin: 25% 100%;
+  transform: rotate(-15deg);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trash-lid.closing { transform: rotate(0deg); }
+.trash-body-lines {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.3s ease 0.25s;
+}
+.trash-deleting .trash-body-lines { stroke-dashoffset: 20; }
+@keyframes trashShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+  75% { transform: rotate(-3deg); }
+}
+@keyframes trashFall {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(12px) scale(0.8); opacity: 0; }
+}
+.trash-shake { animation: trashShake 0.4s ease; }
+.trash-fall { animation: trashFall 0.35s ease forwards; }
+
+/* Modal Crunch & Shake Animation */
+@keyframes modalShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15%, 45%, 75% { transform: translate(-1.5px, 0.5px) rotate(-0.3deg); }
+  30%, 60%, 90% { transform: translate(1.5px, -0.5px) rotate(0.3deg); }
+}
+.modal-shake { animation: modalShake 0.4s ease; }
+
+@keyframes modalCrunch {
+  0% { transform: scale(1); opacity: 1; }
+  15% { transform: scale(1.03, 0.9); opacity: 1; }
+  100% { transform: scale(0.6, 0) translateY(60px); opacity: 0; }
+}
+.modal-crunch { animation: modalCrunch 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+@keyframes backdropFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.backdrop-fade-out { animation: backdropFadeOut 0.35s ease forwards; }
+
+/* Transition for smooth Theme Switch */
+body, .app-card, .nav-container, .field-input, .bg-white, .btn-black, .badge, .fixed {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.3s ease !important;
+}
+
+/* Dark Mode Theme Overrides */
+.dark body {
+  background-color: #0c0c0e !important;
+  color: #f3f4f6 !important;
+}
+.dark .bg-white {
+  background-color: #121214 !important;
+}
+.dark .app-card {
+  background-color: #121214 !important;
+  border-color: #222225 !important;
+}
+.dark .bg-slate-100 {
+  background-color: #27272a !important;
+}
+.dark .border-slate-100, 
+.dark .border-slate-200, 
+.dark .border-neutral-100, 
+.dark .border-neutral-200 {
+  border-color: #27272a !important;
+}
+.dark .text-slate-400 {
+  color: #a1a1aa !important;
+}
+.dark .text-slate-300 {
+  color: #71717a !important;
+}
+.dark .text-slate-200 {
+  color: #52525b !important;
+}
+.dark .bg-slate-50\/30 {
+  background-color: #0c0c0e !important;
+}
+.dark .bg-neutral-50 {
+  background-color: #1a1a1e !important;
+}
+.dark .bg-slate-50\/50 {
+  background-color: #18181b !important;
+}
+.dark .border-slate-100\/50 {
+  border-color: rgba(39, 39, 42, 0.5) !important;
+}
+.dark .text-slate-600 {
+  color: #d4d4d8 !important;
+}
+.dark .text-slate-500 {
+  color: #a1a1aa !important;
+}
+.dark .field-input {
+  background: #18181b !important;
+  border-color: #27272a !important;
+  color: #ffffff !important;
+}
+.dark .field-input:focus {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.08) !important;
+}
+.dark .btn-black {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+.dark .shadow-lg.shadow-black\/10 {
+  box-shadow: none !important;
+}
+.dark #static-add-btn.btn-black {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+.dark #floating-add-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+.dark .badge-applied {
+  background: #27272a !important;
+  color: #ffffff !important;
+}
+.dark .nav-container {
+  border-color: #ffffff !important;
+  background-color: #0c0c0e !important;
+}
+.dark .nav-cursor {
+  background-color: #ffffff !important;
+}
+.dark .text-rose-500 {
+  color: #f43f5e !important;
+}
+.dark .text-rose-600 {
+  color: #fb7185 !important;
+}
+.dark .text-emerald-600 {
+  color: #34d399 !important;
+}
+.dark .text-emerald-500 {
+  color: #34d399 !important;
+}
+.dark .badge-interview {
+  background: #2d2204 !important;
+  color: #fbbf24 !important;
+  border-color: #78350f !important;
+}
+.dark .badge-offer {
+  background: #022c22 !important;
+  color: #34d399 !important;
+  border-color: #065f46 !important;
+}
+.dark .badge-rejected {
+  background: #450a0a !important;
+  color: #f87171 !important;
+  border-color: #991b1b !important;
+}
+.dark .app-card:hover {
+  border-color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(255,255,255,0.015) !important;
+}
+.dark .hover\:text-black:hover {
+  color: #ffffff !important;
+}
+.dark .hover\:border-black:hover {
+  border-color: #ffffff !important;
+}
+.dark svg {
+  stroke: currentColor;
+}
+.dark #trash-lid line, .dark #trash-lid path, .dark #trash-body path, .dark #trash-body line {
+  stroke: #ffffff;
+}
+.dark #status-pick > div {
+  background-color: #121214 !important;
+  border: 1px solid #27272a;
+}
+.dark #status-pick button:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+.dark #delete-confirm > div {
+  background-color: #121214 !important;
+  border: 1px solid #27272a;
+}
+.dark #delete-confirm-detail {
+  background-color: #1a1a1e !important;
+  border-color: #27272a !important;
+  color: #a1a1aa !important;
+}
+.dark #btn-confirm-delete {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+.dark #btn-confirm-delete:hover {
+  background: #f43f5e !important;
+  color: #ffffff !important;
+}
+.dark #overlay > div {
+  background-color: #121214 !important;
+  border: 1px solid #27272a;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.auth-card-animate {
+  animation: authFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
