@@ -95,4 +95,27 @@ public class UserAuthControllerTest {
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void testGuestAuthentication() throws Exception {
+        MvcResult guestResult = mockMvc.perform(post("/api/auth/guest"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseContent = guestResult.getResponse().getContentAsString();
+        Map<?, ?> responseMap = objectMapper.readValue(responseContent, Map.class);
+        String token = (String) responseMap.get("token");
+        String username = (String) responseMap.get("username");
+
+        assertNotNull(token);
+        assertFalse(token.isBlank());
+        assertNotNull(username);
+        assertTrue(username.startsWith("guest_"));
+
+        assertTrue(userRepository.findByUsername(username).isPresent());
+
+        mockMvc.perform(get("/api/applications")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
 }

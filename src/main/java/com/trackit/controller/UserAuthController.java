@@ -69,6 +69,18 @@ public class UserAuthController {
         return ResponseEntity.ok(new AuthResponse(token, user.getUsername()));
     }
 
+    @PostMapping("/guest")
+    @Operation(summary = "Authenticate a temporary guest session and issue JWT token")
+    public ResponseEntity<?> signinGuest() {
+        String guestUsername = "guest_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+        String dummyHashedPassword = BCrypt.hashpw(java.util.UUID.randomUUID().toString(), BCrypt.gensalt());
+        User guestUser = new User(guestUsername, dummyHashedPassword);
+        userRepository.save(guestUser);
+
+        String token = jwtService.generateToken(guestUsername);
+        return ResponseEntity.ok(new AuthResponse(token, guestUsername));
+    }
+
     @PostMapping("/signout")
     @Operation(summary = "Invalidate user session / token")
     public ResponseEntity<Map<String, String>> signout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
