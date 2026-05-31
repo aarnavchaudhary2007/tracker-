@@ -15,6 +15,7 @@ async function apiFetch(url, options = {}) {
 
   if (res.status === 401) {
     forceLogout();
+    showToast("Your session has expired. Please sign in again.", "error");
     throw new Error("Your session has timed out. Please sign in again to keep tracking your applications.");
   }
 

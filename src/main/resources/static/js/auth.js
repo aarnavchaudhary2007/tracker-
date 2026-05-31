@@ -178,6 +178,34 @@ async function handleSignout() {
   forceLogout();
 }
 
+async function handleDeleteAccount() {
+  const confirmed = confirm("Are you sure you want to permanently delete your account and clear all your job tracking applications? This action is serious and cannot be undone.");
+  if (!confirmed) return;
+
+  let token = null;
+  try {
+    token = localStorage.getItem('auth_token');
+  } catch (e) {}
+  
+  if (token) {
+    try {
+      const res = await fetch(window.location.origin + '/api/auth/account', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || "We encountered a problem deleting your account. Please try again.");
+      }
+      showToast('Account and tracking data permanently deleted.', 'success');
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+  
+  forceLogout();
+}
+
 function forceLogout() {
   try {
     localStorage.removeItem('auth_token');
