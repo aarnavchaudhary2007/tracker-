@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trackit.dto.SigninRequest;
 import com.trackit.dto.SignupRequest;
 import com.trackit.model.User;
+import com.trackit.model.Application;
+import com.trackit.model.ApplicationStatus;
+import com.trackit.model.ApplicationType;
+import com.trackit.repository.ApplicationRepository;
 import com.trackit.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,9 +18,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,10 +38,14 @@ public class UserAuthControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        applicationRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -117,5 +127,37 @@ public class UserAuthControllerTest {
         mockMvc.perform(get("/api/applications")
                 .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void testAccountDeletionAndPurge() throws Exception {
+        // 1. Create a user via guest login
+        MvcResult guestResult = mockMvc.perform(post("/api/auth/guest"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseContent = guestResult.getResponse().getContentAsString();
+        Map<?, ?> responseMap = objectMapper.readValue(responseContent, Map.class);
+        String token = (String) responseMap.get("token");
+        String username = (String) responseMap.get("username");
+
+        // 2. Add an application to confirm it is purged later
+        Application app = new Application("Software Developer Intern", "Google DeepMind", ApplicationType.INTERNSHIP, ApplicationStatus.APPLIED, LocalDate.now());
+        applicationRepository.save(app);
+        assertEquals(1, applicationRepository.count());
+
+        // 3. Delete account (must clear user and applications!)
+        mockMvc.perform(delete("/api/auth/account")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        // 4. Verify user and applications are completely purged from database
+        assertFalse(userRepository.findByUsername(username).isPresent());
+        assertEquals(0, applicationRepository.count());
+
+        // 5. Verify the token is now blacklisted/blocked from access
+        mockMvc.perform(get("/api/applications")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
     }
 }

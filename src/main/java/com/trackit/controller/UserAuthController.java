@@ -4,6 +4,7 @@ import com.trackit.dto.AuthResponse;
 import com.trackit.dto.SigninRequest;
 import com.trackit.dto.SignupRequest;
 import com.trackit.model.User;
+import com.trackit.repository.ApplicationRepository;
 import com.trackit.repository.UserRepository;
 import com.trackit.service.JwtService;
 import com.trackit.service.TokenBlacklistService;
@@ -27,12 +28,14 @@ public class UserAuthController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final TokenBlacklistService blacklistService;
+    private final ApplicationRepository applicationRepository;
 
     @Autowired
-    public UserAuthController(UserRepository userRepository, JwtService jwtService, TokenBlacklistService blacklistService) {
+    public UserAuthController(UserRepository userRepository, JwtService jwtService, TokenBlacklistService blacklistService, ApplicationRepository applicationRepository) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.blacklistService = blacklistService;
+        this.applicationRepository = applicationRepository;
     }
 
     @PostMapping("/signup")
@@ -95,6 +98,49 @@ public class UserAuthController {
         blacklistService.blacklistToken(token);
 
         response.put("message", "Signed out successfully. Token invalidated.");
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/account")
+    @Operation(summary = "Permanently delete the user's account and purge their data")
+    public ResponseEntity<Map<String, String>> deleteAccount(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Map<String, String> response = new HashMap<>();
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.put("message", "To delete your account, a valid session token is required.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        String token = authHeader.substring(7).trim();
+        String username;
+        try {
+            username = jwtService.validateToken(token);
+        } catch (Exception e) {
+            response.put("message", "We couldn't verify your session to perform account deletion.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        if (blacklistService.isBlacklisted(token)) {
+            response.put("message", "Your session has already been invalidated.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            response.put("message", "We couldn't locate an active account for your session.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Purge user application data (since single-tenant/local application data is owned by active user)
+        applicationRepository.deleteAll();
+
+        // Delete user account
+        userRepository.delete(user);
+
+        // Blacklist token
+        blacklistService.blacklistToken(token);
+
+        response.put("message", "Your account and tracking data have been permanently deleted.");
         return ResponseEntity.ok(response);
     }
 }
